@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #include <utils.hpp>
+#include <stupid_logger.hpp>
 
 #ifdef __GNUC__
     #include "dxerr9.h"
