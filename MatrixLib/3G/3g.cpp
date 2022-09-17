@@ -206,6 +206,7 @@ void L3GInitAsEXE(HINSTANCE hinst, CBlockPar& bpcfg, const wchar* sysname, const
     }
     if (!g_Wnd)
     {
+        LOG_E("Failed to create a window");
         ERROR_E;
     }
 
@@ -220,6 +221,7 @@ void L3GInitAsEXE(HINSTANCE hinst, CBlockPar& bpcfg, const wchar* sysname, const
                 (int)(tr.right - tr.left),
                 (int)(tr.bottom - tr.top));
 
+        LOG_E("%s")(str.c_str());
         ERROR_S(utils::to_wstring(str));
     }
 
