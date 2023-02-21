@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <fstream>
 #include <chrono>
+#include <iostream>
 
 namespace logger
 {
@@ -111,12 +112,12 @@ public:
     };
 
     stupid(const std::string& path)
-    : _out{path, std::ios::app}
+    : _out{std::cout}
     {
-        if (!_out.is_open())
-        {
-            throw std::runtime_error("Failed to open log file: " + path);
-        }
+        // if (!_out.is_open())
+        // {
+        //     throw std::runtime_error("Failed to open log file: " + path);
+        // }
     }
 
     entry fatal(const char* file, int line, const char* format)
@@ -163,7 +164,7 @@ private:
         }
     }
 
-    std::ofstream _out;
+    std::ostream& _out;
 };
 
 } // namespace logger
@@ -194,6 +195,6 @@ private:
 //     LOG_I("%s - %d")("INFO TEST", 44);
 //     LOG_D("%s - %d")("DEBUG TEST", 45);
 //     LOG_T("%s - %d")("TRACE TEST", 46);
-    
+
 //     return 0;
 // }
