@@ -23,8 +23,8 @@
       "inheritEnvironments": [ "msvc_x86" ],
       "variables": [
         {
-          "name": "MATRIXGAME_BUILD_DLL",
-          "value": "False",
+          "name": "MATRIXGAME_BUILD_LAUNCHER",
+          "value": "True",
           "type": "BOOL"
         }
       ]

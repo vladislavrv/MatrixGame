@@ -5,9 +5,7 @@
 
 #pragma once
 
-#include "Resource.h"
 #include <shlobj.h>
-//#include "windows.h"
 
 class CMatrixMapLogic;
 class CIFaceList;

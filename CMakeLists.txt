@@ -11,7 +11,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-option(MATRIXGAME_BUILD_DLL "Build dll instead of exe" TRUE)
+option(MATRIXGAME_BUILD_LAUNCHER "Build standalone launcher for game" FALSE)
 option(MATRIXGAME_CHEATS "Enable cheats" TRUE)
 
 find_package(DIRECTX9 REQUIRED)
@@ -77,6 +77,24 @@ endif()
 
 add_subdirectory(MatrixLib)
 add_subdirectory(MatrixGame)
+
+if(MATRIXGAME_BUILD_LAUNCHER)
+    add_subdirectory(MatrixLauncher)
+
+    install(
+        TARGETS MatrixGameLauncher
+        CONFIGURATIONS Release
+        RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+        LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+    )
+
+    install(
+        TARGETS MatrixGameLauncher
+        CONFIGURATIONS Debug
+        RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
+        LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
+    )
+endif()
 
 install(
     TARGETS MatrixGame

@@ -5,6 +5,14 @@
 
 #pragma once
 
+#include <windows.h>
+#include <cstdint>
+#include "BaseDef.hpp"
+
+#ifndef MATRIXGAMEDLL_API
+#define MATRIXGAMEDLL_API __declspec(dllexport)
+#endif
+
 enum ESupportError {
     SUPE_OK = 0,
     SUPE_DIRECTX = 1,        // non 9.x DirectX
@@ -61,24 +69,24 @@ struct SMGDRobotInterface {
     void(__stdcall *m_Init)(SMGDRangersInterface *ri);
     void(__stdcall *m_Deinit)();
     int(__stdcall *m_Support)();
-    int(__stdcall *m_Run)(HINSTANCE hinst, HWND hwnd, wchar *map, SRobotsSettings *set, wchar *lang, wchar *txt_start,
-                          wchar *txt_win, wchar *txt_loss, wchar *planet, SRobotGameState *rgs);
+    int(__stdcall *m_Run)(HINSTANCE hinst, HWND hwnd, wchar_t *map, SRobotsSettings *set, wchar_t *lang, wchar_t *txt_start,
+                          wchar_t *txt_win, wchar_t *txt_loss, wchar_t *planet, SRobotGameState *rgs);
 };
 
 struct SMGDRangersInterface {
-    void(__stdcall *m_Sound)(wchar *path);
+    void(__stdcall *m_Sound)(wchar_t *path);
 
-    dword(__stdcall *m_SoundCreate)(wchar *path, int group, int loop);
-    void(__stdcall *m_SoundDestroy)(dword id);
-    void(__stdcall *m_SoundPlay)(dword id);
-    int(__stdcall *m_SoundIsPlay)(dword id);
-    void(__stdcall *m_SoundVolume)(dword id, float vol);
-    void(__stdcall *m_SoundPan)(dword id, float pan);
-    float(__stdcall *m_SoundGetVolume)(dword id);
-    float(__stdcall *m_SoundGetPan)(dword id);
+    uint32_t(__stdcall *m_SoundCreate)(wchar_t *path, int group, int loop);
+    void(__stdcall *m_SoundDestroy)(uint32_t id);
+    void(__stdcall *m_SoundPlay)(uint32_t id);
+    int(__stdcall *m_SoundIsPlay)(uint32_t id);
+    void(__stdcall *m_SoundVolume)(uint32_t id, float vol);
+    void(__stdcall *m_SoundPan)(uint32_t id, float pan);
+    float(__stdcall *m_SoundGetVolume)(uint32_t id);
+    float(__stdcall *m_SoundGetPan)(uint32_t id);
 
-    void(__stdcall *m_RangersText)(wchar *text, wchar *font, DWORD color, int sizex, int sizey, int alignx, int aligny,
-                                   int wordwrap, int smex, int smy, CRect *clipr, SMGDRangersInterfaceText *it);
+    void(__stdcall *m_RangersText)(wchar_t *text, wchar_t *font, uint32_t color, int sizex, int sizey, int alignx, int aligny,
+                                   int wordwrap, int smex, int smy, Base::CRect *clipr, SMGDRangersInterfaceText *it);
     void(__stdcall *m_RangersTextClear)(SMGDRangersInterfaceText *it);
 
     void(__stdcall *m_ProgressBar)(float val);
@@ -92,9 +100,9 @@ struct SMGDRangersInterface {
 };
 
 struct SMGDRangersInterfaceText {
-    DWORD m_Image;
-    BYTE *m_Buf;
-    DWORD m_Pitch;
+    uint32_t m_Image;
+    uint8_t *m_Buf;
+    uint32_t m_Pitch;
     int m_SizeX;
     int m_SizeY;
 };

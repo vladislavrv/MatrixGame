@@ -12,17 +12,12 @@ endmacro()
 file(GLOB MATRIX_SOURCES src/*.cpp src/*.c)
 file(GLOB MATRIX_HEADERS src/*.hpp src/*.h)
 
-set(MATRIX_RESOURCES
-    MatrixGame.ico
-    MatrixGame.rc
-    Resource.h)
-
 target_sources(
     MatrixGameInternal
     PRIVATE
         ${MATRIX_SOURCES}
         ${MATRIX_HEADERS}
-        ${MATRIX_RESOURCES})
+)
 
 target_include_directories(
     MatrixGameInternal
@@ -60,13 +55,6 @@ target_link_libraries(
         "$<$<C_COMPILER_ID:MSVC>:legacy_stdio_definitions>"
 )
 
-if(NOT MATRIXGAME_BUILD_DLL)
-    set_source_files_properties(
-        src/MatrixFormGame.cpp
-        PROPERTIES
-            COMPILE_DEFINITIONS $<$<CONFIG:Release>:EXE_VERSION>)
-endif()
-
 if(MATRIXGAME_CHEATS)
     set_source_files_properties(
         src/MatrixFormGame.cpp
@@ -78,15 +66,9 @@ add_matrix_directory(src/Effects)
 add_matrix_directory(src/Interface)
 add_matrix_directory(src/Logic)
 
-source_group("Resources" FILES ${MATRIX_RESOURCES})
-
-if(MATRIXGAME_BUILD_DLL)
-    add_library(MatrixGame SHARED)
-    # remove lib prefix from the DLL name (for GCC build)
-    set_target_properties(MatrixGame PROPERTIES PREFIX "")
-else()
-    add_executable(MatrixGame)
-endif()
+add_library(MatrixGame SHARED)
+# remove lib prefix from the DLL name (for GCC build)
+set_target_properties(MatrixGame PROPERTIES PREFIX "")
 
 target_sources(MatrixGame PRIVATE
     src/MatrixGame.cpp
