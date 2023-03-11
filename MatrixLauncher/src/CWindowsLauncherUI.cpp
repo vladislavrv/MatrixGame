@@ -1,24 +1,27 @@
+// MatrixLauncher - Launcher for SR2 planetary battle engine
+// Copyright (C) 2023, Uladzislau "TheNornalnij" Nikalayevich
+// Licensed under GPLv2 or any later version
+// Refer to the LICENSE file included
+
+// CWindowsLauncherUI.cpp : Launcher main menu class
 
 #include "CWindowsLauncherUI.h"
-#include "Resource.h"
-#include <exception>
 
 enum class eWindowControll { ID_PLAY_BUTTON, ID_SETTINGS_BUTTON };
+
+static const LPTSTR strWindowName = _T("Matrix launcher");
 
 CWindowsLauncherUI::CWindowsLauncherUI(CSettings *pSettings, CApplication *pApp) {
     m_pSettings = pSettings;
     m_pApp = pApp;
 }
 
-CWindowsLauncherUI::~CWindowsLauncherUI() {
-}
-
 void CWindowsLauncherUI::CreateMainWindow(int nCmdShow) {
-    const boolean success = Create(_T("Matrix game launcher"), WS_OVERLAPPEDWINDOW, NULL, CW_USEDEFAULT,
+    const boolean success = Create(strWindowName, WS_OVERLAPPEDWINDOW, NULL, CW_USEDEFAULT,
                                    CW_USEDEFAULT, 350, 500);
 
     if (!success) {
-        MessageBox(NULL, _T("Failed to create window"), _T("Matrix launcher"), NULL);
+        MessageBox(NULL, _T("Failed to create window"), strWindowName, NULL);
         return;
     }
 
@@ -64,7 +67,7 @@ LRESULT CWindowsLauncherUI::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam
                     m_pApp->StartLocalGame(nullptr);
                     break;
                 case eWindowControll::ID_SETTINGS_BUTTON:
-                    MessageBox(NULL, _T("Not implement"), _T("Matrix game launcher"), NULL);
+                    MessageBox(NULL, _T("Not implement"), strWindowName, NULL);
                     break;
             }
             break;

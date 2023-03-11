@@ -6,32 +6,33 @@
 // CWindowsApplication.cpp : Defines the entry point for the application on windows.
 
 #include "CWindowsApplication.h"
+#include "CWindowsLauncherUI.h"
+#include "CWindowsGameWindow.h"
+
 #include <exception>
 
 CWindowsApplication::CWindowsApplication(HINSTANCE hInstance, int nCmdShow) {
     m_hInstance = hInstance;
     m_nCmdShow = nCmdShow;
     m_settings.ResetSettings();
-    m_pMainMenu = nullptr;
 }
 
-CWindowsApplication::~CWindowsApplication() {
-    if (m_pMainMenu)
-        delete m_pMainMenu;
-}
+CWindowsApplication::~CWindowsApplication() {}
 
 void CWindowsApplication::StartLauncher() {
-    if (m_pMainMenu)
-        return;
-
-    m_pMainMenu = new CWindowsLauncherUI(&m_settings, this);
-    m_pMainMenu->Show(m_nCmdShow);
+    CWindowsLauncherUI mainMenu = CWindowsLauncherUI(&m_settings, this);
+    mainMenu.Show(m_nCmdShow);
 }
 
 void CWindowsApplication::StartLocalGame(wchar_t* map) {
     SRobotsSettings *robotSettings = m_settings.GetRobotGameSettings();
 
-    HWND hGameWindow = CreateGameWindow(robotSettings->m_ResolutionX, robotSettings->m_ResolutionY);
+    CWindowsGameWindow gameWnd = CWindowsGameWindow();
+    HWND hGameWindow = gameWnd.CreateDefault(robotSettings->m_ResolutionX, robotSettings->m_ResolutionY);
+
+    if (!hGameWindow) {
+        throw std::exception("Can't create game window");
+    }
 
     IDirect3D9 *FDirect3D = nullptr;
     IDirect3DDevice9 *D3DDevice = nullptr;
@@ -45,44 +46,12 @@ void CWindowsApplication::StartLocalGame(wchar_t* map) {
     robotSettings->FD3DDevice = (long)D3DDevice;
 
     SRobotGameState robotGameState{0, 0, 0, 0, 0, 0};
-
+    
+    // Takes controll
     GetRobotInterface()->m_Run(m_hInstance, hGameWindow, map, robotSettings, nullptr, L"Welcome messsage", L"You Win",
                                L"You loss", L"%PlanetName%", &robotGameState);
-}
 
-LRESULT CALLBACK RobotWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch (msg) {
-        case WM_CLOSE:
-            DestroyWindow(hwnd);
-            break;
-        case WM_DESTROY:
-            PostQuitMessage(0);
-            break;
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-    }
-    return 0;
-}
-
-HWND CWindowsApplication::CreateGameWindow(uint32_t w, uint32_t h) {
-    const wchar_t CLASS_NAME[] = L"Robot war";
-
-    WNDCLASSW wc = {};
-
-    wc.lpfnWndProc = RobotWndProc;
-    wc.hInstance = m_hInstance;
-    wc.lpszClassName = CLASS_NAME;
-
-    RegisterClassW(&wc);
-
-    HWND hGameWindow = CreateWindowEx(0, L"Robot war", L"Robot war", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-                                       w, h, NULL,NULL, m_hInstance, NULL);
-
-    if (hGameWindow == 0) {
-        throw std::exception("Can't create game window");
-    }
-
-    return hGameWindow;
+    gameWnd.Close();
 }
 
 void CWindowsApplication::InitD3D(HWND hWnd, uint32_t w, uint32_t h, bool windowed, IDirect3D9* &FDirect3D, IDirect3DDevice9* &D3DDevice) {

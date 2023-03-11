@@ -1,3 +1,10 @@
+// MatrixLauncher - Launcher for SR2 planetary battle engine
+// Copyright (C) 2023, Uladzislau "TheNornalnij" Nikalayevich
+// Licensed under GPLv2 or any later version
+// Refer to the LICENSE file included
+
+// CSettings.h : Game settings file class implementation
+
 #include "CSettings.h"
 
 CSettings::CSettings() {

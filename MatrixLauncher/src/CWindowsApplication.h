@@ -12,7 +12,6 @@
 #include "MatrixGameDll.hpp"
 #include "d3d9.h"
 #include "CSettings.h"
-#include "CWindowsLauncherUI.h"
 
 class CWindowsApplication : CApplication {
 public:
@@ -23,12 +22,10 @@ public:
     void StartLocalGame(wchar_t *wcBattleMap) override;
 
 private:
-    HWND CreateGameWindow(uint32_t w, uint32_t h);
     void InitD3D(HWND hWnd, uint32_t w, uint32_t h, bool windowed, IDirect3D9 *&FDirect3D, IDirect3DDevice9 *&D3DDevice);
 
 private:
     CSettings m_settings;
     HINSTANCE m_hInstance;
     int m_nCmdShow;
-    CWindowsLauncherUI* m_pMainMenu;
 };

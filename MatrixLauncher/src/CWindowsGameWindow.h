@@ -3,28 +3,20 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-// CWindowsLauncherUI.h : Launcher main menu header
+// CWindowsGameWindow.h : Main game window ui header
 
 #pragma once
 
-#include "CSettings.h"
-#include "CApplication.h"
 #include "CWindowsBaseWindowTemplate.h"
 
-class CWindowsLauncherUI : public BaseWindow<CWindowsLauncherUI> {
+class CWindowsGameWindow : public BaseWindow<CWindowsGameWindow> {
 public:
-    CWindowsLauncherUI(CSettings *pSettings, CApplication *pApp);
-    ~CWindowsLauncherUI(){};
+    CWindowsGameWindow(){};
+    ~CWindowsGameWindow(){};
 
-    void CreateMainWindow(int nCmdShow);
-
-    void Show(int nCmdShow);
+    HWND CreateDefault(int w, int h);
     void Close();
 
     virtual LPTSTR ClassName() const override;
     virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-
-private:
-    CSettings *m_pSettings;
-    CApplication* m_pApp;
 };

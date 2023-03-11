@@ -1,6 +1,13 @@
+// MatrixLauncher - Launcher for SR2 planetary battle engine
+// Copyright (C) 2023, Uladzislau "TheNornalnij" Nikalayevich
+// Licensed under GPLv2 or any later version
+// Refer to the LICENSE file included
+
+// CWindowsBaseWindowTemplate.h : Template for OOP window classes
 
 #pragma once
 #include <tchar.h>
+#include "windows.h"
 
 template <class DERIVED_TYPE> 
 class BaseWindow
