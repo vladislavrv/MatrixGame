@@ -12,14 +12,15 @@
 #include "MatrixGameDll.hpp"
 #include "d3d9.h"
 #include "CSettings.h"
+#include "CWindowsLauncherUI.h"
 
 class CWindowsApplication : CApplication {
 public:
-    CWindowsApplication(HINSTANCE hInstance);
+    CWindowsApplication(HINSTANCE hInstance, int nCmdShow);
     ~CWindowsApplication();
     
-    void StartLauncher();
-    void StartLocalGame(wchar_t *wcBattleMap);
+    void StartLauncher() override;
+    void StartLocalGame(wchar_t *wcBattleMap) override;
 
 private:
     HWND CreateGameWindow(uint32_t w, uint32_t h);
@@ -28,4 +29,6 @@ private:
 private:
     CSettings m_settings;
     HINSTANCE m_hInstance;
+    int m_nCmdShow;
+    CWindowsLauncherUI* m_pMainMenu;
 };

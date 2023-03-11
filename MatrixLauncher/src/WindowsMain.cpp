@@ -8,13 +8,13 @@
 #include <windows.h>
 #include "CWindowsApplication.h"
 
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPTSTR, int) {
-    const wchar_t *cmd = GetCommandLineW();
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInsatnce, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd) {
+    const wchar_t *cmd = GetCommandLine();
 
     int numarg;
     wchar_t **args = CommandLineToArgvW(cmd, &numarg);
 
-    CWindowsApplication app(hInstance);
+    CWindowsApplication app(hInstance, nShowCmd);
 
     if (numarg > 1) {
         app.StartLocalGame(args[1]);

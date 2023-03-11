@@ -34,7 +34,8 @@ target_compile_definitions(
         $<$<CONFIG:Release>:ASSERT_OFF>
         _ALLOW_RTCc_IN_STL
         WINDOWS_IGNORE_PACKING_MISMATCH
-        ${COMPILE_DEFINITIONS})
+        ${COMPILE_DEFINITIONS}
+        -DUNICODE -D_UNICODE)
 
 target_link_options(
     MatrixGameLauncher

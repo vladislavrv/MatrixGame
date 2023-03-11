@@ -8,17 +8,24 @@
 #include "CWindowsApplication.h"
 #include <exception>
 
-CWindowsApplication::CWindowsApplication(HINSTANCE hInstance){
+CWindowsApplication::CWindowsApplication(HINSTANCE hInstance, int nCmdShow) {
     m_hInstance = hInstance;
+    m_nCmdShow = nCmdShow;
     m_settings.ResetSettings();
+    m_pMainMenu = nullptr;
 }
 
 CWindowsApplication::~CWindowsApplication() {
-
+    if (m_pMainMenu)
+        delete m_pMainMenu;
 }
 
 void CWindowsApplication::StartLauncher() {
-    StartLocalGame(nullptr);
+    if (m_pMainMenu)
+        return;
+
+    m_pMainMenu = new CWindowsLauncherUI(&m_settings, this);
+    m_pMainMenu->Show(m_nCmdShow);
 }
 
 void CWindowsApplication::StartLocalGame(wchar_t* map) {
@@ -68,7 +75,7 @@ HWND CWindowsApplication::CreateGameWindow(uint32_t w, uint32_t h) {
 
     RegisterClassW(&wc);
 
-    HWND hGameWindow = CreateWindowExW(0, L"Robot war", L"Robot war", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+    HWND hGameWindow = CreateWindowEx(0, L"Robot war", L"Robot war", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
                                        w, h, NULL,NULL, m_hInstance, NULL);
 
     if (hGameWindow == 0) {

@@ -5,6 +5,8 @@
 
 // CSettings.h : Game settings file header
 
+#pragma once
+
 #include "MatrixGameDll.hpp"
 
 class CSettings {
