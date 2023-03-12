@@ -2,6 +2,8 @@
 #include <fstream>
 #include <chrono>
 #include <iostream>
+#include <source_location>
+#include <string_view>
 
 namespace logger
 {
@@ -17,44 +19,49 @@ enum class level : uint8_t
 }; 
 
 /// Just a stupid logger class.
-/// Not much optimized (might became better with C++17), not much pretty,
-/// but doing its job with no questions and additional external deps.
-/// Simple usage example is at the very and of this file.
+/// Not much optimized, not much pretty, but doing its job with no
+/// questions and additional external deps.
+/// Simple usage example is at the very end of this file.
 template <logger::level type>
 class stupid
 {
 public:
-    // TODO: with C++17 replace level with template parameter and
-    // check it with 'if constexpr'. this will help optimizer to
-    // throw out useless log calls at compile time (though it is
-    // done anyway, at least by GCC)
+    template <logger::level _level>
     class entry
     {
         friend class stupid;
 
-        // TODO: with C++17 replace caller info with std::source_location
-        entry(std::ostream& out, logger::level level, const char* file, int line, const char* format)
+        entry(std::ostream& out, std::source_location caller, std::string_view format)
         : _out{out}
-        , _level{level}
         {
-            if (_level != logger::level::nolog)
+            if constexpr (_level != logger::level::nolog)
             {
                 _format = format;
-                _file = file;
-                _line = line;
+                _caller = caller;
             }
         }
 
     public:
         entry(entry&&) = default;
-        ~entry() = default;
+        ~entry()
+        {
+            if (!_logged)
+            {
+                (*this)();
+            }
+        }
 
         template<typename... Args>
         void operator() (Args&&... args)
         {
-            if (_level != logger::level::nolog)
+            if constexpr (_level != logger::level::nolog)
             {
-                std::string fmt = std::string{"%s |%5s| "} + _format + " | %s:%d\n";
+                if (_logged)
+                {
+                    return;
+                }
+
+                std::string fmt = "%s |%5s| " + std::string{_format} + " | %s:%d\n";
                 char buf[1024];
                 int len = 
                     std::snprintf(
@@ -64,19 +71,21 @@ public:
                         get_formatted_time().c_str(),
                         get_formatted_level(),
                         args...,
-                        _file,
-                        _line);
+                        _caller.file_name(),
+                        _caller.line());
 
                 if (len > 0)
                 {
                     _out.write(buf, len);
                     _out.flush();
                 }
+
+                _logged = true;
             }
         }
     
     private:
-        const char* get_formatted_level()
+        static consteval const char* get_formatted_level()
         {
             switch(_level)
             {
@@ -86,6 +95,7 @@ public:
                 case level::info:    return " INFO";
                 case level::debug:   return "DEBUG";
                 case level::trace:   return "TRACE";
+                case level::nolog:   return "NOLOG"; // shouldn't happen
             }
 
             return ""; // unreachable
@@ -105,66 +115,65 @@ public:
         }
 
         std::ostream& _out;
-        logger::level _level;
-        const char* _format;
-        const char* _file;
-        int _line;
+        std::string_view _format;
+        std::source_location _caller;
+        bool _logged{false};
     };
 
     stupid(const std::string& path)
-    : _out{std::cout}
+    : _out{path, std::ios::app}
     {
-        // if (!_out.is_open())
-        // {
-        //     throw std::runtime_error("Failed to open log file: " + path);
-        // }
+        if (!_out.is_open())
+        {
+            throw std::runtime_error("Failed to open log file: " + path);
+        }
     }
 
-    entry fatal(const char* file, int line, const char* format)
+    auto fatal(const char* format, std::source_location caller = std::source_location::current())
     {
-        return create_entry<level::fatal>(file, line, format);
+        return create_entry<level::fatal>(caller, format);
     }
 
-    entry error(const char* file, int line, const char* format)
+    auto error(const char* format, std::source_location caller = std::source_location::current())
     {
-        return create_entry<level::error>(file, line, format);
+        return create_entry<level::error>(caller, format);
     }
 
-    entry warning(const char* file, int line, const char* format)
+    auto warning(const char* format, std::source_location caller = std::source_location::current())
     {
-        return create_entry<level::warning>(file, line, format);
+        return create_entry<level::warning>(caller, format);
     }
 
-    entry info(const char* file, int line, const char* format)
+    auto info(const char* format, std::source_location caller = std::source_location::current())
     {
-        return create_entry<level::info>(file, line, format);
+        return create_entry<level::info>(caller, format);
     }
 
-    entry debug(const char* file, int line, const char* format)
+    auto debug(const char* format, std::source_location caller = std::source_location::current())
     {
-        return create_entry<level::debug>(file, line, format);
+        return create_entry<level::debug>(caller, format);
     }
 
-    entry trace(const char* file, int line, const char* format)
+    auto trace(const char* format, std::source_location caller = std::source_location::current())
     {
-        return create_entry<level::trace>(file, line, format);
+        return create_entry<level::trace>(caller, format);
     }
 
 private:
     template <logger::level value>
-    entry create_entry(const char* file, int line, const char* format)
+    auto create_entry(std::source_location caller, const char* format)
     {
-        if (value <= type)
+        if constexpr (value <= type)
         {
-            return entry(_out, value, file, line, format);
+            return entry<value>(_out, caller, format);
         }
         else
         {
-            return entry(_out, logger::level::nolog, file, line, format);
+            return entry<logger::level::nolog>(_out, caller, format);
         }
     }
 
-    std::ostream& _out;
+    std::ofstream _out;
 };
 
 } // namespace logger
@@ -176,25 +185,19 @@ private:
 #else
     using logger_type = logger::stupid<logger::level::warning>;
 #endif
-    extern logger_type lgr;
 
-#define LOG_F(fmt) lgr.fatal(__FILE__, __LINE__, (fmt))
-#define LOG_E(fmt) lgr.error(__FILE__, __LINE__, (fmt))
-#define LOG_W(fmt) lgr.warning(__FILE__, __LINE__, (fmt))
-#define LOG_I(fmt) lgr.info(__FILE__, __LINE__, (fmt))
-#define LOG_D(fmt) lgr.debug(__FILE__, __LINE__, (fmt))
-#define LOG_T(fmt) lgr.trace(__FILE__, __LINE__, (fmt))
+extern logger_type lgr;
 
 // Usage example:
 // int main()
 // {
 //     logger_type lgr("./test.log");
-//     LOG_F("%s - %d")("FATAL TEST", 42);
-//     LOG_E("%s - %d")("ERROR TEST", 42);
-//     LOG_W("%s - %d")("WARNING TEST", 43);
-//     LOG_I("%s - %d")("INFO TEST", 44);
-//     LOG_D("%s - %d")("DEBUG TEST", 45);
-//     LOG_T("%s - %d")("TRACE TEST", 46);
+//     lgr.fatal("%s - %d")("FATAL TEST", 42);
+//     lgr.error("%s - %d")("ERROR TEST", 42);
+//     lgr.warning("%s - %d")("WARNING TEST", 43);
+//     lgr.info("%s - %d")("INFO TEST", 44);
+//     lgr.debug("%s - %d")("DEBUG TEST", 45);
+//     lgr.trace("%s - %d")("TRACE TEST", 46);
 
 //     return 0;
 // }
