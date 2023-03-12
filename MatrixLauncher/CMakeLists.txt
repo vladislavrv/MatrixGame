@@ -1,12 +1,12 @@
 add_executable(MatrixGameLauncher)
 
-file(GLOB MATRIX_LAUNCHER_SOURCES src/*.cpp src/*.c)
-file(GLOB MATRIX_LAUNCHER_HEADERS src/*.hpp src/*.h)
+file(GLOB MATRIX_LAUNCHER_SOURCES src/*.cpp)
+file(GLOB MATRIX_LAUNCHER_HEADERS src/*.h)
+file(GLOB MATRIX_RESOURCES resources/*)
 
-set(MATRIX_RESOURCES
-    MatrixGame.ico
-    MatrixGame.rc
-    Resource.h)
+source_group ("MatrixLauncher\\Source Files" FILES ${MATRIX_LAUNCHER_SOURCES})
+source_group ("MatrixLauncher\\Header Files" FILES ${MATRIX_LAUNCHER_HEADERS})
+source_group ("MatrixLauncher\\Resources" FILES ${MATRIX_RESOURCES})
 
 target_sources(
     MatrixGameLauncher
@@ -37,18 +37,10 @@ target_compile_definitions(
         ${COMPILE_DEFINITIONS}
         -DUNICODE -D_UNICODE)
 
-target_link_options(
-    MatrixGameLauncher
-    PUBLIC
-        "$<$<C_COMPILER_ID:MSVC>:-SAFESEH:NO>"
-        ${LINK_OPTIONS})
-
 target_link_libraries(
     MatrixGameLauncher
         MatrixGame
 )
-
-source_group("Resources" FILES ${MATRIX_RESOURCES})
 
 target_sources(MatrixGameLauncher PRIVATE
     src/WindowsMain.cpp

@@ -11,9 +11,8 @@
 
 #include <exception>
 
-CWindowsApplication::CWindowsApplication(HINSTANCE hInstance, int nCmdShow) {
+CWindowsApplication::CWindowsApplication(HINSTANCE hInstance) {
     m_hInstance = hInstance;
-    m_nCmdShow = nCmdShow;
     m_settings.ResetSettings();
 }
 
@@ -21,7 +20,7 @@ CWindowsApplication::~CWindowsApplication() {}
 
 void CWindowsApplication::StartLauncher() {
     CWindowsLauncherUI mainMenu = CWindowsLauncherUI(&m_settings, this);
-    mainMenu.Show(m_nCmdShow);
+    mainMenu.Run();
 }
 
 void CWindowsApplication::StartLocalGame(wchar_t* map) {

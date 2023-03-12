@@ -15,7 +15,7 @@
 
 class CWindowsApplication : CApplication {
 public:
-    CWindowsApplication(HINSTANCE hInstance, int nCmdShow);
+    CWindowsApplication(HINSTANCE hInstance);
     ~CWindowsApplication();
     
     void StartLauncher() override;

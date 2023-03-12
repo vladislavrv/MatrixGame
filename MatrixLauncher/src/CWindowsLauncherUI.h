@@ -9,19 +9,16 @@
 
 #include "CSettings.h"
 #include "CApplication.h"
-#include "CWindowsBaseWindowTemplate.h"
+#include "CWindowsBaseDialogTemplate.h"
 
-class CWindowsLauncherUI : public BaseWindow<CWindowsLauncherUI> {
+class CWindowsLauncherUI : public BaseDialog<CWindowsLauncherUI> {
 public:
     CWindowsLauncherUI(CSettings *pSettings, CApplication *pApp);
     ~CWindowsLauncherUI(){};
 
-    void CreateMainWindow(int nCmdShow);
-
-    void Show(int nCmdShow);
+    void Run();
     void Close();
 
-    virtual LPTSTR ClassName() const override;
     virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:

@@ -14,7 +14,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInsatnce
     int numarg;
     wchar_t **args = CommandLineToArgvW(cmd, &numarg);
 
-    CWindowsApplication app(hInstance, nShowCmd);
+    CWindowsApplication app(hInstance);
 
     if (numarg > 1) {
         app.StartLocalGame(args[1]);
