@@ -7,6 +7,7 @@
 
 #include "CWindowsLauncherUI.h"
 #include "resources/Resource.h"
+#include "MatrixGameDll.hpp"
 
 CWindowsLauncherUI::CWindowsLauncherUI(CSettings *pSettings, CApplication *pApp) {
     m_pSettings = pSettings;
@@ -23,16 +24,31 @@ void CWindowsLauncherUI::Close() {
 
 LRESULT CWindowsLauncherUI::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
+        case WM_INITDIALOG: {
+            static HWND hwndList = GetDlgItem(m_hWnd, IDC_MAPLIST); 
+
+            InterateMaps([](const wchar_t *name) { SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)name); });
+        }
         case WM_COMMAND: {
-            switch (wParam)
+            switch (LOWORD(wParam))
             {
                 case ID_BTN_PLAY:
                     Close();
-                    m_pApp->StartLocalGame(nullptr);
-                    break;
+                    m_pApp->StartLocalGame(m_wcSelectedMap);
+                    return TRUE;
                 case ID_BTN_SETTINGS:
                     MessageBox(NULL, _T("Not implement"), _T("Error"), NULL);
-                    break;
+                    return TRUE;
+                case IDC_MAPLIST:
+                    switch (HIWORD(wParam)) {
+                        case LBN_SELCHANGE: {
+                            HWND hwndList = GetDlgItem(m_hWnd, IDC_MAPLIST);
+                            int lbItem = (int)SendMessage(hwndList, LB_GETCURSEL, 0, 0);
+
+                            SendMessage(hwndList, LB_GETTEXT, lbItem, (LPARAM)m_wcSelectedMap);
+                            return TRUE;
+                        }
+                    }
             }
             break;
         }

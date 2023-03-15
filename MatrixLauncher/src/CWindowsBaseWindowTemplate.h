@@ -41,7 +41,7 @@ public:
 
     BaseWindow() : m_hWnd(NULL) { }
 
-    boolean Create(
+    bool Create(
         LPTSTR lpWindowName,
         DWORD dwStyle,
         DWORD dwExStyle = 0,

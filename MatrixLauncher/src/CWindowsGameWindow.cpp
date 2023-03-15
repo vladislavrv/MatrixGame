@@ -8,7 +8,7 @@
 #include "CWindowsGameWindow.h"
 
 HWND CWindowsGameWindow::CreateDefault(int w, int h) {
-    Create(_T("Matrix game"), WS_OVERLAPPEDWINDOW, NULL, CW_USEDEFAULT, CW_USEDEFAULT, w, h);
+    Create((wchar_t*)_T("Matrix game"), WS_OVERLAPPEDWINDOW, NULL, CW_USEDEFAULT, CW_USEDEFAULT, w, h);
 
     return m_hWnd;
 }
@@ -18,7 +18,7 @@ void CWindowsGameWindow::Close() {
 }
 
 LPTSTR CWindowsGameWindow::ClassName() const {
-    return _T("Matrix game");
+    return (wchar_t*)_T("Matrix game");
 }
 
 LRESULT CWindowsGameWindow::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {

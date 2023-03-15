@@ -1462,6 +1462,17 @@ void CHsFolder::ListFileNames(FILENAME_CALLBACK_FUNC Func) {
     }
 }
 
+void CHsFolder::ForFiles(void predicate (const char * name)) {
+    for (int i = 0; i < m_FolderRec.m_Recnum; ++i) {
+        SFileRec *PFile = m_Files + i;
+        if (PFile->m_Free == 0) {
+            if (PFile->m_Type != FILEEC_FOLDER) {
+                predicate(PFile->m_Name);
+            }
+        }
+    }
+}
+
 CHsFolder *CHsFolder::GetFolderEx(const std::string& path) {
     if (path.empty())
         return this;

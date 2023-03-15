@@ -11,6 +11,8 @@
 #include "CApplication.h"
 #include "CWindowsBaseDialogTemplate.h"
 
+#define MAX_MAP_PATH_SIZE 256
+
 class CWindowsLauncherUI : public BaseDialog<CWindowsLauncherUI> {
 public:
     CWindowsLauncherUI(CSettings *pSettings, CApplication *pApp);
@@ -24,4 +26,6 @@ public:
 private:
     CSettings *m_pSettings;
     CApplication* m_pApp;
+
+    wchar_t m_wcSelectedMap[MAX_MAP_PATH_SIZE] = {0};
 };

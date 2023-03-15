@@ -18,6 +18,7 @@
 #include <windows.h>
 #include <excpt.h>
 #include <dbghelp.h>
+#include <string_view>
 #pragma comment(lib, "dbghelp.lib")
 
 SMGDRobotInterface g_RobotInterface;
@@ -340,4 +341,30 @@ MATRIXGAMEDLL_API SMGDRobotInterface *__cdecl GetRobotInterface(void) {
     g_RobotInterface.m_Support = &Support;
     g_RobotInterface.m_Run = &Run;
     return &g_RobotInterface;
+}
+
+// TODO more map info
+MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t* name)) {
+
+#ifndef MAXEXP_EXPORTS
+    CHeap heap = CHeap{};
+    CPackFile robotPack = CPackFile(&heap, L"DATA\\robots.pkg");
+    robotPack.OpenPacketFile();
+
+    CHsFolder* mapsFolder = robotPack.GetRootFolder()->GetFolderEx("Matrix\\Map\\");
+
+    static auto _predicate = predicate;
+    static wchar_t buff[100];
+    mapsFolder->ForFiles([](const char *name) {
+        std::string_view nameStr = std::string_view(name);
+
+        if (nameStr.ends_with(".CMAP")) {
+            std::mbstowcs(buff, name, 100);
+            _predicate(buff);
+        }
+    });
+
+    robotPack.ClosePacketFile();
+#endif
+
 }

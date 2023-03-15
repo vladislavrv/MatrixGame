@@ -166,6 +166,8 @@ public:
 
     void ListFileNames(FILENAME_CALLBACK_FUNC Func);
 
+    void ForFiles(void predicate(const char *name));
+
     //*** Функции, используемые при установке типа файла *****
     // void    SetFileType(const std::string& name, EFileType NType);
     // void    SetFolderType(const std::string& name, EFileType NType);
@@ -217,6 +219,9 @@ public:
         return ClosePacketFile();
     }
     DWORD GetHandle(void) const { return m_Handle; }
+
+    CHsFolder *GetRootFolder() { return m_RootFolder; };
+
     void Clear(void);
     //***** Процедуры работы с файлами -- позиционирование указателя в файл ложится на объект PackFile
     DWORD Open(const std::string& filename, DWORD modeopen = GENERIC_READ | GENERIC_WRITE);

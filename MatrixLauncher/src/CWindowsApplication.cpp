@@ -47,8 +47,10 @@ void CWindowsApplication::StartLocalGame(wchar_t* map) {
     SRobotGameState robotGameState{0, 0, 0, 0, 0, 0};
     
     // Takes controll
-    GetRobotInterface()->m_Run(m_hInstance, hGameWindow, map, robotSettings, nullptr, L"Welcome messsage", L"You Win",
-                               L"You loss", L"%PlanetName%", &robotGameState);
+    GetRobotInterface()->m_Run(m_hInstance, hGameWindow, map, robotSettings, nullptr,
+                               (wchar_t*)L"Welcome messsage", (wchar_t*)L"You Win",
+                               (wchar_t*)L"You loss", (wchar_t*)L"%PlanetName%",
+                               &robotGameState);
 
     gameWnd.Close();
 }

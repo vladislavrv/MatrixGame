@@ -7,6 +7,7 @@
 
 #include <windows.h>
 #include <cstdint>
+#include <list>
 #include "BaseDef.hpp"
 
 #ifndef MATRIXGAMEDLL_API
@@ -109,6 +110,7 @@ struct SMGDRangersInterfaceText {
 
 extern "C" {
 MATRIXGAMEDLL_API SMGDRobotInterface *__cdecl GetRobotInterface(void);
+MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name));
 }
 
 extern SMGDRobotInterface g_RobotInterface;
