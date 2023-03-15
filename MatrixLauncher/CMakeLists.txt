@@ -20,7 +20,7 @@ target_include_directories(
     PUBLIC
         .
         src
-        "$<$<C_COMPILER_ID:MSVC>:${DIRECTX9_INCLUDE_DIRS}>")
+)
 
 target_compile_options(
     MatrixGameLauncher
