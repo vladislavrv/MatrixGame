@@ -7,7 +7,7 @@
 
 #include "CWindowsLauncherUI.h"
 #include "resources/Resource.h"
-#include "MatrixGameDll.hpp"
+#include "MatrixGameDllEx.hpp"
 
 CWindowsLauncherUI::CWindowsLauncherUI(CSettings *pSettings, CApplication *pApp) {
     m_pSettings = pSettings;

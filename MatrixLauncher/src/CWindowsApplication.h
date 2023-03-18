@@ -9,7 +9,7 @@
 
 #include "CApplication.h"
 
-#include "MatrixGameDll.hpp"
+#include "MatrixGameDllEx.hpp"
 #include "CSettings.h"
 
 class CWindowsApplication : CApplication {

@@ -3,6 +3,9 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
+// Old interface for Space Rangers 2 game
+// Should save ABI for backward compatibility
+
 #pragma once
 
 #include <windows.h>
@@ -110,7 +113,6 @@ struct SMGDRangersInterfaceText {
 
 extern "C" {
 MATRIXGAMEDLL_API SMGDRobotInterface *__cdecl GetRobotInterface(void);
-MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name));
 }
 
 extern SMGDRobotInterface g_RobotInterface;
