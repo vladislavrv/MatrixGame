@@ -6,7 +6,7 @@
 #pragma once
 
 #include "MatrixFormGame.hpp"
-#include "MatrixGameDll.hpp"
+#include "MatrixGameDllEx.hpp"
 
 class CMatrixMapLogic;
 class CIFaceList;
@@ -33,14 +33,14 @@ public:
     CGame(){};
     ~CGame(){};
 
-    void Init(HINSTANCE hInstance, HWND wnd, wchar *map = NULL, uint32_t seed = 0, SRobotsSettings *set = NULL,
-              wchar *lang = NULL, wchar *txt_start = NULL, wchar *txt_win = NULL, wchar *txt_loss = NULL,
-              wchar *planet = NULL);
+    void Init(HINSTANCE hInstance, HWND wnd, wchar *map = NULL, uint32_t seed = 0, SMatrixSettings *set = nullptr,
+              SMatrixTextParams *textParams = nullptr);
     void Deinit();
     void SafeFree();
     void RunGameLoop(CFormMatrixGame *formGame);
     void SaveResult(SRobotGameState *state);
 
 private:
-    void ApplyVideoParams(SRobotsSettings *settings);
+    void ApplyVideoParams(SMatrixSettings *settings, bool autodetectFullscreen);
+    void ApplyTextsReplaces(SMatrixTextParams *textParams);
 };

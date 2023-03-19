@@ -67,8 +67,7 @@ static void static_init(void) {
     g_Flags = 0;  // GFLAG_FORMACCESS;
 }
 
-void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SRobotsSettings *set, wchar *lang,
-                 wchar *txt_start, wchar *txt_win, wchar *txt_loss, wchar *planet) {
+void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSettings *set, SMatrixTextParams *textParams) {
     srand(seed);
     static_init();
 
@@ -87,8 +86,8 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SRobotsSet
     bool stor_cfg_present = false;
     std::wstring stor_cfg_name;
     std::wstring conf_file{FILE_CONFIGURATION_LOCATION};
-    if (lang != NULL) {
-        conf_file += lang;
+    if (set && set->m_Lang != NULL) {
+        conf_file += set->m_Lang;
         conf_file += L"\\";
     }
     conf_file += FILE_CONFIGURATION;
@@ -112,52 +111,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SRobotsSet
         g_MatrixData->LoadFromTextFile(L"cfg\\robots\\data.txt");
     }
 
-    {
-        CBlockPar *repl = g_MatrixData->BlockGetAdd(PAR_REPLACE);
-
-        // init menu replaces
-
-        CBlockPar *rr = g_MatrixData->BlockGet(IF_LABELS_BLOCKPAR)->BlockGet(L"Replaces");
-        int cnt = rr->ParCount();
-        for (int i = 0; i < cnt; ++i) {
-            repl->ParAdd(rr->ParGetName(i), rr->ParGet(i));
-        }
-
-        if (txt_start) {
-            if (txt_start[0] >= '1' && txt_start[0] <= '6') {
-                repl->ParSetAdd(PAR_REPLACE_BEGIN_ICON_RACE, std::wstring{txt_start, 1});
-                repl->ParSetAdd(PAR_REPLACE_DIFFICULTY, std::wstring{txt_start + 1, 2});
-                repl->ParSetAdd(PAR_REPLACE_BEGIN_TEXT, txt_start + 3);
-            }
-            else {
-                repl->ParSetAdd(PAR_REPLACE_BEGIN_ICON_RACE, L"1");
-                repl->ParSetAdd(PAR_REPLACE_BEGIN_TEXT, txt_start);
-            }
-        }
-        else {
-            repl->ParSetAdd(PAR_REPLACE_BEGIN_ICON_RACE, L"1");
-            repl->ParSetAdd(PAR_REPLACE_BEGIN_TEXT, L"Go! Go! Go!");
-        }
-
-        if (txt_win) {
-            repl->ParSetAdd(PAR_REPLACE_END_TEXT_WIN, txt_win);
-        }
-        else {
-            repl->ParSetAdd(PAR_REPLACE_END_TEXT_WIN, L"Good job man :)");
-        }
-        if (txt_loss) {
-            repl->ParSetAdd(PAR_REPLACE_END_TEXT_LOOSE, txt_loss);
-        }
-        else {
-            repl->ParSetAdd(PAR_REPLACE_END_TEXT_LOOSE, L"Sux :(");
-        }
-        if (planet) {
-            repl->ParSetAdd(PAR_REPLACE_END_TEXT_PLANET, planet);
-        }
-        else {
-            repl->ParSetAdd(PAR_REPLACE_END_TEXT_PLANET, L"Luna");
-        }
-    }
+    ApplyTextsReplaces(textParams);
 
     DCP();
 
@@ -174,35 +128,9 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SRobotsSet
     else
         L3GInitAsEXE(inst, *g_MatrixData->BlockGet(L"Config"), L"MatrixGame", L"Matrix Game");
 
-    //=========================================================================
-    // this shit is pretending to be a settings provided by a main game
-    // when this engine is used as dll. dirty solution, but seems to be
-    // necessary to make it working in a standalone (exe) mode.
-    SRobotsSettings settings;
-    settings.m_ShowStencilShadows = 1;
-    settings.m_ShowProjShadows = 1;
-    settings.m_IzvratMS = 0;
-    settings.m_LandTexturesGloss = 1;
-    settings.m_ObjTexturesGloss = 1;
-    settings.m_SoftwareCursor = 0;
-    settings.m_SkyBox = 2;
-    settings.m_RobotShadow = 1;
-    settings.m_BPP = 32;
-    settings.m_ResolutionX = g_ScreenX;
-    settings.m_ResolutionY = g_ScreenY;
-    settings.m_RefreshRate = 60;
-    settings.m_Brightness = 0.5;
-    settings.m_Contrast = 0.5;
-    settings.m_FSAASamples = 0;
-    settings.m_AFDegree = 0;
-    settings.m_MaxDistance = 1;
-    settings.m_VSync = 1;
-    //=========================================================================
 
-    if (set) {
-        g_ScreenX = set->m_ResolutionX;
-        g_ScreenY = set->m_ResolutionY;
-    }
+    g_ScreenX = set->m_ResolutionX;
+    g_ScreenY = set->m_ResolutionY;
 
     g_Render = HNew(g_MatrixHeap) CRenderPipeline;  // prepare pipelines
 
@@ -213,18 +141,11 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SRobotsSet
 
     g_Config.SetDefaults();
     g_Config.ReadParams();
-    if (set)
-    {
-        g_Config.ApplySettings(set);
-        g_Sampler.ApplySettings(set);
-        SetMaxCameraDistance(set->m_MaxDistance);
-    }
-    else
-    {
-        g_Config.ApplySettings(&settings);
-        g_Sampler.ApplySettings(&settings);
-        SetMaxCameraDistance(settings.m_MaxDistance);
-    }
+
+    g_Config.ApplySettings(set);
+    g_Sampler.ApplySettings(set);
+
+    SetMaxCameraDistance(set->m_MaxDistance);
 
     DCP();
 
@@ -390,14 +311,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SRobotsSet
         g_RangersInterface->m_Begin();
     }
 
-    if (set)
-    {
-        ApplyVideoParams(set);
-    }
-    else
-    {
-        ApplyVideoParams(&settings);
-    }
+    ApplyVideoParams(set, wnd != NULL);
 
     /*IDirect3DSurface9 * surf;
     g_D3DD->GetRenderTarget(0,&surf);
@@ -421,7 +335,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SRobotsSet
     // if (iface_save) bpi.SaveInTextFile(IF_PATH, true);
 }
 
-void CGame::ApplyVideoParams(SRobotsSettings *set) {
+void CGame::ApplyVideoParams(SMatrixSettings *set, bool autodetectFullscreen) {
     DTRACE();
 
     int bpp;
@@ -439,14 +353,23 @@ void CGame::ApplyVideoParams(SRobotsSettings *set) {
     else {
         bpp = 16;
     }
+    
+    int refresh_rate_required = 0;
+    bool was_in_window_mode = true;
+    bool now_in_window_mode = false;
 
-    bool change_refresh_rate = set->m_RefreshRate != 0 && set->m_RefreshRate != d3ddm.RefreshRate;
-    int refresh_rate_required = change_refresh_rate ? set->m_RefreshRate : 0;
+    if (autodetectFullscreen) {
+        bool change_refresh_rate = set->m_RefreshRate != 0 && set->m_RefreshRate != d3ddm.RefreshRate;
+        refresh_rate_required = change_refresh_rate ? set->m_RefreshRate : 0;
 
-    RECT rect;
-    GetClientRect(g_Wnd, &rect);
-    bool was_in_window_mode = (rect.right != d3ddm.Width || rect.bottom != d3ddm.Height);
-    bool now_in_window_mode = was_in_window_mode && (bpp == set->m_BPP) && !change_refresh_rate;
+        RECT rect;
+        GetClientRect(g_Wnd, &rect);
+        was_in_window_mode = (rect.right != d3ddm.Width || rect.bottom != d3ddm.Height);
+        now_in_window_mode = was_in_window_mode && (bpp == set->m_BPP) && !change_refresh_rate;
+    }
+    else {
+        now_in_window_mode = !set->m_Fullscreen;
+    }
 
     if (set->m_FSAASamples > 16)
         ERROR_S(L"Invalid multisample type");
@@ -552,6 +475,53 @@ void CGame::ApplyVideoParams(SRobotsSettings *set) {
     //	D3DXVec3Normalize((D3DXVECTOR3 *)(&(light.Direction)),(D3DXVECTOR3 *)(&(light.Direction)));
     ASSERT_DX(g_D3DD->SetLight(0, &light));
     ASSERT_DX(g_D3DD->LightEnable(0, TRUE));
+}
+
+void CGame::ApplyTextsReplaces(SMatrixTextParams *textParams) {
+    CBlockPar *repl = g_MatrixData->BlockGetAdd(PAR_REPLACE);
+
+    // init menu replaces
+
+    CBlockPar *rr = g_MatrixData->BlockGet(IF_LABELS_BLOCKPAR)->BlockGet(L"Replaces");
+    int cnt = rr->ParCount();
+    for (int i = 0; i < cnt; ++i) {
+        repl->ParAdd(rr->ParGetName(i), rr->ParGet(i));
+    }
+
+    if (textParams->startText) {
+        if (textParams->startText[0] >= '1' && textParams->startText[0] <= '6') {
+            repl->ParSetAdd(PAR_REPLACE_BEGIN_ICON_RACE, std::wstring{textParams->startText, 1});
+            repl->ParSetAdd(PAR_REPLACE_DIFFICULTY, std::wstring{textParams->startText + 1, 2});
+            repl->ParSetAdd(PAR_REPLACE_BEGIN_TEXT, textParams->startText + 3);
+        }
+        else {
+            repl->ParSetAdd(PAR_REPLACE_BEGIN_ICON_RACE, L"1");
+            repl->ParSetAdd(PAR_REPLACE_BEGIN_TEXT, textParams->startText);
+        }
+    }
+    else {
+        repl->ParSetAdd(PAR_REPLACE_BEGIN_ICON_RACE, L"1");
+        repl->ParSetAdd(PAR_REPLACE_BEGIN_TEXT, L"Go! Go! Go!");
+    }
+
+    if (textParams->winText) {
+        repl->ParSetAdd(PAR_REPLACE_END_TEXT_WIN, textParams->winText);
+    }
+    else {
+        repl->ParSetAdd(PAR_REPLACE_END_TEXT_WIN, L"Good job man :)");
+    }
+    if (textParams->lossText) {
+        repl->ParSetAdd(PAR_REPLACE_END_TEXT_LOOSE, textParams->lossText);
+    }
+    else {
+        repl->ParSetAdd(PAR_REPLACE_END_TEXT_LOOSE, L"Sux :(");
+    }
+    if (textParams->planetName) {
+        repl->ParSetAdd(PAR_REPLACE_END_TEXT_PLANET, textParams->planetName);
+    }
+    else {
+        repl->ParSetAdd(PAR_REPLACE_END_TEXT_PLANET, L"Luna");
+    }
 }
 
 void CGame::Deinit(void) {

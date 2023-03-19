@@ -33,3 +33,21 @@ MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name))
     robotPack.ClosePacketFile();
 #endif
 }
+
+MATRIXGAMEDLL_API int __cdecl RunStandalone(HINSTANCE hinst, wchar *map, SMatrixSettings *set,
+                                               SMatrixTextParams *textParams, SRobotGameState *rgs) {
+    CGame game{};
+
+    uint32_t seed = (unsigned)time(NULL);
+
+    game.Init(hinst, NULL, map, seed, set, textParams);
+
+    CFormMatrixGame formgame;
+
+    game.RunGameLoop(&formgame);
+
+    game.SaveResult(rgs);
+    game.SafeFree();
+
+    return g_ExitState;
+}

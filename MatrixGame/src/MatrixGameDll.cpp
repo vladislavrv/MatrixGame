@@ -76,20 +76,28 @@ int __stdcall Run(HINSTANCE hinst, HWND hwnd, wchar *map, SRobotsSettings *set, 
 
     uint32_t seed = (unsigned)time(NULL);
 
-    game.Init(hinst, hwnd, map, seed, set, lang, txt_start, txt_win, txt_loss, planet);
-    
-    CFormMatrixGame *formgame = HNew(NULL) CFormMatrixGame();
+    SMatrixSettings matrixSettings{};
 
-    game.RunGameLoop(formgame);
+    matrixSettings = (SMatrixSettings)*set;
+    matrixSettings.m_Lang = lang;
+    // We will ignore this setting for this interface
+    matrixSettings.m_Fullscreen = false;
+
+    SMatrixTextParams textReplaces{};
+
+    textReplaces.startText = txt_start;
+    textReplaces.winText = txt_win;
+    textReplaces.lossText = txt_loss;
+    textReplaces.planetName = planet;
+
+    game.Init(hinst, hwnd, map, seed, &matrixSettings, &textReplaces);
+    
+    CFormMatrixGame formgame;
+
+    game.RunGameLoop(&formgame);
 
     game.SaveResult(rgs);
     game.SafeFree();
-
-    try {
-        HDelete(CFormMatrixGame, formgame, NULL);
-    }
-    catch (...) {
-    }
 
     ClipCursor(NULL);
 

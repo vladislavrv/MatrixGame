@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "MatrixGameDll.hpp"
+#include "MatrixGameDllEx.hpp"
 
 class CSettings {
 public:
@@ -16,15 +16,14 @@ public:
 
     void ResetSettings();
 
-    bool isFullScreen() { return m_bFullScreen; };
-    void SetFullScreen(bool state) { m_bFullScreen = state; };
+    bool isFullScreen() { return m_sRobotSettings.m_Fullscreen; };
+    void SetFullScreen(bool state) { m_sRobotSettings.m_Fullscreen = state; };
 
     void GetScreen(uint32_t &w, uint32_t &h);
     void SetScreen(uint32_t w, uint32_t h);
 
-    SRobotsSettings *GetRobotGameSettings() { return &m_sRobotSettings; };
+    SMatrixSettings *GetMatrixGameSettings() { return &m_sRobotSettings; };
 
 private:
-    bool m_bFullScreen;
-    SRobotsSettings m_sRobotSettings;
+    SMatrixSettings m_sRobotSettings;
 };

@@ -28,6 +28,7 @@ void CSettings::ResetSettings() {
     m_sRobotSettings.m_AFDegree = 0;
     m_sRobotSettings.m_MaxDistance = 1;
     m_sRobotSettings.m_VSync = 1;
+    m_sRobotSettings.m_Lang = nullptr;
 
     SetScreen(1920, 1080);
     SetFullScreen(true);

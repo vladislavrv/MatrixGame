@@ -23,14 +23,15 @@ void CWindowsApplication::StartLauncher() {
 }
 
 void CWindowsApplication::StartLocalGame(wchar_t* map) {
-    SRobotsSettings *robotSettings = m_settings.GetRobotGameSettings();
+    SMatrixSettings *matrixSettings = m_settings.GetMatrixGameSettings();
 
     SRobotGameState robotGameState{0};
+
+    SMatrixTextParams texts{};
+    texts.lossText = L"Fail";
+    texts.winText = L"Win";
+    texts.planetName = L"Minsk";
     
     // Takes controll
-    GetRobotInterface()->m_Run(m_hInstance, 0, map, robotSettings, nullptr,
-                               (wchar_t*)L"Welcome messsage", (wchar_t*)L"You Win",
-                               (wchar_t*)L"You loss", (wchar_t*)L"%PlanetName%",
-                               &robotGameState);
-
+    RunStandalone(m_hInstance, map, matrixSettings, &texts, &robotGameState);
 }
