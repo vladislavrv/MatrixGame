@@ -52,8 +52,6 @@ struct SRobotsSettings {
     int m_AFDegree;
     float m_MaxDistance;
     bool m_VSync;
-
-    void ApplyVideoParams(void);
 };
 
 struct SRobotGameState {
@@ -123,4 +121,5 @@ extern SMGDRangersInterface *g_RangersInterface;
 // 2-loss
 // 3-win
 // 4-cancel
+// +100-with error
 extern int g_ExitState;
