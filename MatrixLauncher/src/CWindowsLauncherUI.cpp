@@ -8,6 +8,7 @@
 #include "CWindowsLauncherUI.h"
 #include "resources/Resource.h"
 #include "MatrixGameDllEx.hpp"
+#include "WindowsSettingsUI.h"
 
 CWindowsLauncherUI::CWindowsLauncherUI(CSettings *pSettings, CApplication *pApp) {
     m_pSettings = pSettings;
@@ -15,7 +16,7 @@ CWindowsLauncherUI::CWindowsLauncherUI(CSettings *pSettings, CApplication *pApp)
 }
 
 void CWindowsLauncherUI::Run() {
-    RunDialog(ID_LAUNCHER_MAIN);
+    RunDialog(IDD_LAUNCHER_MAIN);
 }
 
 void CWindowsLauncherUI::Close() {
@@ -36,9 +37,11 @@ LRESULT CWindowsLauncherUI::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam
                     Close();
                     m_pApp->StartLocalGame(m_wcSelectedMap);
                     return TRUE;
-                case ID_BTN_SETTINGS:
-                    MessageBox(NULL, _T("Not implement"), _T("Error"), NULL);
+                case ID_BTN_SETTINGS: {
+                    CWindowsSettingsUI settingsDialog = CWindowsSettingsUI(m_pSettings);
+                    settingsDialog.Run();
                     return TRUE;
+                }
                 case IDC_MAPLIST:
                     switch (HIWORD(wParam)) {
                         case LBN_SELCHANGE: {

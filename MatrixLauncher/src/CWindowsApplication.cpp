@@ -8,8 +8,6 @@
 #include "CWindowsApplication.h"
 #include "CWindowsLauncherUI.h"
 
-#include <exception>
-
 CWindowsApplication::CWindowsApplication(HINSTANCE hInstance) {
     m_hInstance = hInstance;
     m_settings.ResetSettings();

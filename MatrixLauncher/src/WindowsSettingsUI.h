@@ -3,7 +3,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-// CWindowsLauncherUI.h : Launcher main menu header
+// CWindowsSettingsUI.h : Launcher settings menu header
 
 #pragma once
 
@@ -13,10 +13,10 @@
 
 #define MAX_MAP_PATH_SIZE 256
 
-class CWindowsLauncherUI : public BaseDialog<CWindowsLauncherUI> {
+class CWindowsSettingsUI : public BaseDialog<CWindowsSettingsUI> {
 public:
-    CWindowsLauncherUI(CSettings *pSettings, CApplication *pApp);
-    ~CWindowsLauncherUI() = default;
+    CWindowsSettingsUI(CSettings *pSettings);
+    ~CWindowsSettingsUI() = default;
 
     void Run();
     void Close();
@@ -25,7 +25,4 @@ public:
 
 private:
     CSettings *m_pSettings;
-    CApplication* m_pApp;
-
-    wchar_t m_wcSelectedMap[MAX_MAP_PATH_SIZE] = {0};
 };
