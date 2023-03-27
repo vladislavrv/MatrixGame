@@ -15,6 +15,57 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Neutral (Default) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(1251)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SETTINGS_DIALOG DIALOGEX 0, 0, 189, 78
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Matrix game settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,75,55,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,132,55,50,14
+    LTEXT           "Resolution",IDC_SCREEN,7,15,34,8
+    CONTROL         "Fullscreen",IDC_FULLSCREEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,16,48,10
+    EDITTEXT        IDC_SCREEN_W,49,14,30,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "x",IDC_STATIC,84,15,8,8
+    EDITTEXT        IDC_SCREEN_H,93,14,30,12,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Lang",IDC_STATIC,7,33,32,12
+    COMBOBOX        IDC_COMBO_LANG,49,33,77,90,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_SETTINGS_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 182
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 69
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Neutral (Default) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // Russian (Russia) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
@@ -58,26 +109,31 @@ BEGIN
     END
 END
 
+#endif    // Russian (Russia) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_SETTINGS_DIALOG DIALOGEX 0, 0, 189, 78
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Matrix game settings"
+IDD_LAUNCHER_MAIN DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Matrix Game Luancher"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,73,55,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,132,54,50,15
-    LTEXT           "Resolution",IDC_SCREEN,7,15,34,8
-    CONTROL         "Fullscreen",IDC_FULLSCREEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,134,16,48,10
-    EDITTEXT        IDC_SCREEN_W,49,14,30,12,ES_AUTOHSCROLL
-    LTEXT           "x",IDC_STATIC,84,15,8,8
-    EDITTEXT        IDC_SCREEN_H,93,14,30,12,ES_AUTOHSCROLL
-    LTEXT           "Lang",IDC_STATIC,7,33,32,12
-    COMBOBOX        IDC_COMBO_LANG,47,33,77,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Settings",ID_BTN_SETTINGS,198,155,50,14
+    PUSHBUTTON      "Play",ID_BTN_PLAY,252,155,50,14
+    LISTBOX         IDC_MAPLIST,6,19,296,126,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Map list:",IDC_STATIC,6,7,296,12
 END
 
 
@@ -89,26 +145,16 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
-    IDD_SETTINGS_DIALOG, DIALOG
+    IDD_LAUNCHER_MAIN, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 182
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 302
         TOPMARGIN, 7
-        BOTTOMMARGIN, 69
+        BOTTOMMARGIN, 169
     END
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Russian (Russia) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -147,42 +193,6 @@ BEGIN
     "\0"
 END
 
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_LAUNCHER_MAIN DIALOGEX 0, 0, 309, 176
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Matrix Game Luancher"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "Settings",ID_BTN_SETTINGS,198,155,50,14
-    PUSHBUTTON      "Play",ID_BTN_PLAY,252,155,50,14
-    LISTBOX         IDC_MAPLIST,6,19,296,126,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Map list:",IDC_STATIC,6,7,296,12
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_LAUNCHER_MAIN, DIALOG
-    BEGIN
-        LEFTMARGIN, 6
-        RIGHTMARGIN, 302
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 169
-    END
-END
 #endif    // APSTUDIO_INVOKED
 
 

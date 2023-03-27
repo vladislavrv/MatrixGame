@@ -15,13 +15,16 @@
 
 class CWindowsSettingsUI : public BaseDialog<CWindowsSettingsUI> {
 public:
-    CWindowsSettingsUI(CSettings *pSettings);
+    CWindowsSettingsUI(CSettings *pSettings) : m_pSettings(pSettings){};
     ~CWindowsSettingsUI() = default;
 
-    void Run();
+    void Run(HWND parent = 0);
     void Close();
 
     virtual LRESULT HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+private:
+    void ApplySettings();
 
 private:
     CSettings *m_pSettings;

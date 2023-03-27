@@ -34,9 +34,8 @@ public:
 
     BaseDialog() : m_hWnd(NULL) {}
 
-    void RunDialog(int iDialogId) {
-        HINSTANCE hInstance = GetModuleHandle(NULL);
-        DialogBoxParam(hInstance, MAKEINTRESOURCE(iDialogId), 0, WindowProc, (LPARAM)this);
+    void RunDialog(int iDialogId, HWND parent = 0) {
+        DialogBoxParam(NULL, MAKEINTRESOURCE(iDialogId), parent, WindowProc, (LPARAM)this);
     }
 
     HWND Window() const { return m_hWnd; }

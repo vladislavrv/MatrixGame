@@ -18,7 +18,7 @@ struct SMatrixTextParams {
 
 struct SMatrixSettings : public SRobotsSettings {
     bool m_Fullscreen;
-    wchar_t *m_Lang;
+    const wchar_t *m_Lang;
 };
 
 extern "C" {

@@ -22,6 +22,9 @@ public:
     void GetScreen(uint32_t &w, uint32_t &h);
     void SetScreen(uint32_t w, uint32_t h);
 
+    const wchar_t *GetLang() { return m_sRobotSettings.m_Lang; };
+    void SetLang(const wchar_t *lang) { m_sRobotSettings.m_Lang = lang; };
+
     SMatrixSettings *GetMatrixGameSettings() { return &m_sRobotSettings; };
 
 private:

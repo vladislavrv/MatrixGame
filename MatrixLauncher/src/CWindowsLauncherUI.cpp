@@ -29,17 +29,20 @@ LRESULT CWindowsLauncherUI::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam
             static HWND hwndList = GetDlgItem(m_hWnd, IDC_MAPLIST); 
 
             InterateMaps([](const wchar_t *name) { SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)name); });
+            return TRUE;
         }
         case WM_COMMAND: {
             switch (LOWORD(wParam))
             {
                 case ID_BTN_PLAY:
-                    Close();
-                    m_pApp->StartLocalGame(m_wcSelectedMap);
+                    if (m_wcSelectedMap[0]) {
+                        Close();
+                        m_pApp->StartLocalGame(m_wcSelectedMap);
+                    }
                     return TRUE;
                 case ID_BTN_SETTINGS: {
-                    CWindowsSettingsUI settingsDialog = CWindowsSettingsUI(m_pSettings);
-                    settingsDialog.Run();
+                    CWindowsSettingsUI settingsWnd = CWindowsSettingsUI(m_pSettings);
+                    settingsWnd.Run(m_hWnd);
                     return TRUE;
                 }
                 case IDC_MAPLIST:
@@ -57,12 +60,12 @@ LRESULT CWindowsLauncherUI::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam
         }
         case WM_CLOSE:
             Close();
-            break;
+            return TRUE;
         case WM_DESTROY:
             PostQuitMessage(0);
-            break;
+            return TRUE;
         default:
-            return DefWindowProc(m_hWnd, msg, wParam, lParam);
+            return 0;
     }
     return 0;
 }
