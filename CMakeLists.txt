@@ -11,7 +11,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-option(MATRIXGAME_BUILD_LAUNCHER "Build standalone launcher for game" FALSE)
+option(MATRIXGAME_BUILD_LAUNCHER "Build standalone launcher for game" TRUE)
 option(MATRIXGAME_CHEATS "Enable cheats" TRUE)
 
 find_package(DIRECTX9 REQUIRED)
