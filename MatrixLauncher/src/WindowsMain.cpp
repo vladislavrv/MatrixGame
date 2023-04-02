@@ -6,7 +6,7 @@
 // WindowsMain.cpp : Windows application entrypoint
 
 #include <windows.h>
-#include "CWindowsApplication.h"
+#include "WindowsApplication.h"
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInsatnce, _In_ LPWSTR lpCmdLine, _In_ int nShowCmd) {
     const wchar_t *cmd = GetCommandLine();

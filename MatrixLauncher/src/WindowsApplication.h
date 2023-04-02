@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "CApplication.h"
+#include "Application.h"
 
 #include "MatrixGameDllEx.hpp"
-#include "CSettings.h"
+#include "Settings.h"
 
 class CWindowsApplication : CApplication {
 public:

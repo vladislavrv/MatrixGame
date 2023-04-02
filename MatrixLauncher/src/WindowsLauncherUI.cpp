@@ -5,7 +5,7 @@
 
 // CWindowsLauncherUI.cpp : Launcher main menu class
 
-#include "CWindowsLauncherUI.h"
+#include "WindowsLauncherUI.h"
 #include "resources/Resource.h"
 #include "MatrixGameDllEx.hpp"
 #include "WindowsSettingsUI.h"

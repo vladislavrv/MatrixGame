@@ -5,8 +5,8 @@
 
 // CWindowsApplication.cpp : Defines the entry point for the application on windows.
 
-#include "CWindowsApplication.h"
-#include "CWindowsLauncherUI.h"
+#include "WindowsApplication.h"
+#include "WindowsLauncherUI.h"
 
 CWindowsApplication::CWindowsApplication(HINSTANCE hInstance) {
     m_hInstance = hInstance;

@@ -5,7 +5,7 @@
 
 // CSettings.h : Game settings file class implementation
 
-#include "CSettings.h"
+#include "Settings.h"
 
 CSettings::CSettings() {
     ResetSettings();

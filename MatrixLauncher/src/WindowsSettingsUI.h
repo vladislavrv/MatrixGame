@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "CSettings.h"
-#include "CApplication.h"
-#include "CWindowsBaseDialogTemplate.h"
+#include "Settings.h"
+#include "Application.h"
+#include "WindowsBaseDialogTemplate.h"
 
 #define MAX_MAP_PATH_SIZE 256
 
