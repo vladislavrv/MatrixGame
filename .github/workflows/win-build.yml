@@ -1,17 +1,10 @@
 name: Auto-build
 
-on:
-  push:
-    branches: [ "refactoring", "TEST" ]
-  pull_request:
-    branches: [ "refactoring" ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  msvc:
-    name: Build with MSVC
+  msvc_debug:
+    name: Build with MSVC (Debug)
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
@@ -28,7 +21,7 @@ jobs:
       shell: bash
     - name: Compile with MSVC
       run: |
-        cmake -A Win32 . -B build_msvc
+        CMAKE_BUILD_TYPE=Debug cmake -A Win32 . -B build_msvc
         cmake --build build_msvc
       shell: bash
     - name: Store artifacts
@@ -38,8 +31,36 @@ jobs:
         path: |
           ${{ github.workspace }}/build_msvc/MatrixGame/Debug/MatrixGame.dll
 
+  msvc_release:
+    name: Build with MSVC (Release)
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Get DXSDK
+      run:  |
+            DXDIR=$TEMP/DXDIR
+            curl -L https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o _DX2010_.exe
+            7z x _DX2010_.exe DXSDK/Include -o_DX2010_
+            7z x _DX2010_.exe DXSDK/Lib/x86 -o_DX2010_
+            mkdir $DXDIR
+            mv _DX2010_/DXSDK/* $DXDIR
+            rm -fR _DX*_ _DX*_.exe
+            echo "DXSDK_DIR=$DXDIR" >> $GITHUB_ENV
+      shell: bash
+    - name: Compile with MSVC
+      run: |
+        CMAKE_BUILD_TYPE=Release cmake -A Win32 . -B build_msvc
+        cmake --build build_msvc
+      shell: bash
+    - name: Store artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dll_msvc
+        path: |
+          ${{ github.workspace }}/build_msvc/MatrixGame/Release/MatrixGame.dll
+
   gcc:
-    name: Build with GCC
+    name: Build with GCC (Debug)
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
@@ -63,7 +84,43 @@ jobs:
       run: |
         # ninja wants cmd.exe to be in the path
         export PATH=/c/Windows/System32:$PATH
-        cmake . -G "Ninja" -B build_gcc
+        CMAKE_BUILD_TYPE=Debug cmake . -G "Ninja" -B build_gcc
+        cmake --build build_gcc
+      shell: bash
+    - name: Store artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dll_gcc
+        path: |
+          ${{ github.workspace }}/build_gcc/MatrixGame/MatrixGame.dll
+
+           
+  gcc_release:
+    name: Build with GCC (Debug)
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Get MinGW
+      run: |
+           MINGW_DIR=$TEMP/mingw
+           curl -L https://github.com/brechtsanders/winlibs_mingw/releases/download/12.2.0-14.0.6-10.0.0-ucrt-r2/winlibs-i686-posix-dwarf-gcc-12.2.0-mingw-w64ucrt-10.0.0-r2.7z -o mingw.7z
+           7z x mingw.7z -o$MINGW_DIR
+           rm mingw.7z
+           echo "PATH=$MINGW_DIR/mingw32/bin:$PATH" >> $GITHUB_ENV
+      shell: bash
+    - name: Get Ninja
+      run: |
+           NINJA_DIR=$TEMP/ninja
+           curl -L https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-win.zip -o ninja.zip
+           unzip ninja.zip -d $NINJA_DIR
+           rm ninja.zip
+           echo "PATH=$NINJA_DIR:$PATH" >> $GITHUB_ENV
+      shell: bash
+    - name: Compile with GCC
+      run: |
+        # ninja wants cmd.exe to be in the path
+        export PATH=/c/Windows/System32:$PATH
+        CMAKE_BUILD_TYPE=Release cmake . -G "Ninja" -B build_gcc
         cmake --build build_gcc
       shell: bash
     - name: Store artifacts
