@@ -57,7 +57,7 @@ jobs:
       with:
         name: dll_msvc
         path: |
-          ${{ github.workspace }}/build_msvc/MatrixGame/Release/MatrixGame.dll
+          ${{ github.workspace }}/build_msvc/MatrixGame/MatrixGame.dll
 
   gcc:
     name: Build with GCC (Debug)
