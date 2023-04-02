@@ -99,6 +99,15 @@ if(MATRIXGAME_BUILD_LAUNCHER)
         RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
         LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
     )
+
+    if(MSVC)
+        install(
+            FILES $<TARGET_PDB_FILE:MatrixGameLauncher>
+            CONFIGURATIONS Debug
+            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
+        )
+    endif()
+
 endif()
 
 install(
