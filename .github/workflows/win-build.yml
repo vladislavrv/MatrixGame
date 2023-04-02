@@ -21,7 +21,7 @@ jobs:
       shell: bash
     - name: Compile with MSVC
       run: |
-        CMAKE_BUILD_TYPE=Debug cmake -A Win32 . -B build_msvc
+        cmake -A Win32 . -B build_msvc -DCMAKE_BUILD_TYPE=Debug
         cmake --build build_msvc
       shell: bash
     - name: Store artifacts
@@ -49,7 +49,7 @@ jobs:
       shell: bash
     - name: Compile with MSVC
       run: |
-        CMAKE_BUILD_TYPE=Release cmake -A Win32 . -B build_msvc
+        cmake -A Win32 . -B build_msvc -DCMAKE_BUILD_TYPE=Release
         cmake --build build_msvc
       shell: bash
     - name: Store artifacts
@@ -84,7 +84,7 @@ jobs:
       run: |
         # ninja wants cmd.exe to be in the path
         export PATH=/c/Windows/System32:$PATH
-        CMAKE_BUILD_TYPE=Debug cmake . -G "Ninja" -B build_gcc
+        cmake . -G "Ninja" -B build_gcc -DCMAKE_BUILD_TYPE=Debug
         cmake --build build_gcc
       shell: bash
     - name: Store artifacts
@@ -96,7 +96,7 @@ jobs:
 
            
   gcc_release:
-    name: Build with GCC (Debug)
+    name: Build with GCC (Release)
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
@@ -120,7 +120,7 @@ jobs:
       run: |
         # ninja wants cmd.exe to be in the path
         export PATH=/c/Windows/System32:$PATH
-        CMAKE_BUILD_TYPE=Release cmake . -G "Ninja" -B build_gcc
+        cmake . -G "Ninja" -B build_gcc -DCMAKE_BUILD_TYPE=Release
         cmake --build build_gcc
       shell: bash
     - name: Store artifacts
