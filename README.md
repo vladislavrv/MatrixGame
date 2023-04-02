@@ -34,7 +34,7 @@ After refactoring done in this repo (which brought modern C++ standards support)
 MS Visual Studio 17 2022 or newer is required, together with dependencies described above. Put your version to -G argument or remove it so CMake will use default one.
 
     cmake -A Win32 -G "Visual Studio 17 2022" -B ./build ./
-    cmake --build ./build
+    cmake --build ./build --config Release
 
 See what's happening, check the final binary path at the end and find your game file.
 

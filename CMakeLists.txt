@@ -5,10 +5,6 @@ set(CMAKE_CONFIGURATION_TYPES Release Debug)
 
 project(MatrixGame)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 option(MATRIXGAME_BUILD_LAUNCHER "Build standalone launcher for game" TRUE)
