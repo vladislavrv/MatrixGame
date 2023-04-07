@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdio>
 #include <fstream>
 #include <chrono>
@@ -109,9 +111,13 @@ public:
 
             char buf[32] = {0};
             time_t tt = sec.count();
+#pragma warning(disable : 4996) // msvc does not like localtime
             auto offset = std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&tt));
+#pragma warning(default : 4996)
             std::snprintf(buf + offset, sizeof(buf) - offset, ".%06lld", usec.count());
             return buf;
+
+
         }
 
         std::ostream& _out;
