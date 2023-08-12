@@ -8,7 +8,6 @@
 #include "MatrixMap.hpp"
 
 #include <utils.hpp>
-#include <stupid_logger.hpp>
 
 #include <new>
 #include <map>
