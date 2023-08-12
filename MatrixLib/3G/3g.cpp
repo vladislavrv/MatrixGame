@@ -3,8 +3,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include <fstream>
-
 #include "Texture.hpp"
 #include "3g.hpp"
 #include "Helper.hpp"
@@ -16,10 +14,14 @@
 #include "CException.hpp"
 #include "CReminder.hpp"
 
-#include <stdio.h>
-
 #include <utils.hpp>
 #include <stupid_logger.hpp>
+
+#include <fstream>
+#include <chrono>
+#include <thread>
+
+#include <stdio.h>
 
 #ifdef __GNUC__
     #include "dxerr9.h"
@@ -46,13 +48,9 @@ D3DPRESENT_PARAMETERS g_D3Dpp;
 
 DWORD g_Flags = 0;
 
-int g_DrawFPS = 0;
-double g_DrawFPSMax_Period = (1000.0 / 50000.0);
-int g_MaxFPS = 1000;
-int g_DrawFPSCur = 0;
-int g_DrawFPSTime = 0;
+int g_MaxFPS;
+int g_DrawFPS;
 
-int g_TaktTime = 0;
 int g_AvailableTexMem;
 
 #ifdef DO_SMART_COLOROPS
@@ -127,12 +125,6 @@ void L3GInitAsEXE(HINSTANCE hinst, CBlockPar& bpcfg, const wchar* sysname, const
     RECT tr;
 
     L3GDeinit();
-
-    g_DrawFPS = 0;
-    g_DrawFPSMax_Period = (1000.0 / 50000.0);
-    g_DrawFPSCur = 0;
-    g_DrawFPSTime = 0;
-    g_TaktTime = 0;
 
     g_HInst = hinst;
     g_Wnd = NULL;
@@ -357,12 +349,6 @@ void L3GInitAsDLL(HINSTANCE hinst, CBlockPar& bpcfg, const wchar* sysname, const
 
     L3GDeinit();
 
-    g_DrawFPS = 0;
-    g_DrawFPSMax_Period = (1000.0 / 50000.0);
-    g_DrawFPSCur = 0;
-    g_DrawFPSTime = 0;
-    g_TaktTime = 0;
-
     g_HInst = hinst;
     g_Wnd = hwnd;
     g_WndExtern = true;
@@ -442,33 +428,61 @@ void L3GDeinit() {
     g_WndExtern = false;
 }
 
-int L3GRun() {
-    MSG msg;  // ZeroMemory(&msg,sizeof(MSG));
+template<size_t _size>
+class fps_counter
+{
+public:
+    using clock = std::chrono::high_resolution_clock;
 
-    double freq_inv;
-    union {
-        unsigned __int64 freq;
-        LARGE_INTEGER freq_li;
-    };
-    union {
-        unsigned __int64 takt;
-        LARGE_INTEGER takt_li;
-    };
-    union {
-        unsigned __int64 draw_time_last;
-        LARGE_INTEGER draw_time_last_li;
-    };
+    void add(clock::time_point tp)
+    {
+        if (_full)
+        {
+            ++_left %= _size;
+        }
 
-    unsigned __int64 zero_offset;
+        while (_left != _right && _values[_left] < tp - period)
+        {
+            ++_left %= _size;
+            _full = false;
+        }
 
-    QueryPerformanceFrequency(&freq_li);
-    freq_inv = 1000.0 / double(freq);
+        _values[_right] = tp;
 
-    QueryPerformanceCounter(&takt_li);
-    draw_time_last = takt;
-    zero_offset = takt;
+        ++_right %= _size;
 
-    float prev_takt = 10.0f;
+        _full = _right == _left;
+    }
+
+    size_t count()
+    {
+        ssize_t fps = _right - _left + _full * _size;
+        return (fps >= 0) ? fps : _size + fps;
+    }
+
+    void clear()
+    {
+        _left = _right = 0;
+    }
+
+private:
+    static constexpr clock::duration period = std::chrono::seconds(1);
+
+    std::array<clock::time_point, _size> _values;
+    size_t _left{0};
+    size_t _right{0};
+    bool _full{false};
+};
+
+
+
+int L3GRun()
+{
+    using clock = std::chrono::high_resolution_clock;
+    constexpr auto freq = clock::period::den;
+
+    double freq_inv = 1000.0 / double(freq);
+
 
     int smooth[SMOOTH_COUNT];
     int smooths = SMOOTH_COUNT * 10;
@@ -476,91 +490,85 @@ int L3GRun() {
     for (int i = 0; i < SMOOTH_COUNT; ++i)
         smooth[i] = 10;
 
-    for (;;) {
-        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            // TranslateMessage(&msg);
+    clock::time_point start_tp, logic_tp, draw_tp;
+
+    fps_counter<100> fps;
+    MSG msg;
+
+    auto zero_offset = clock::now();
+    auto last_takt = zero_offset;
+
+    while (true)
+    {
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
             DispatchMessage(&msg);
         }
-        if (msg.message == WM_QUIT)
+        if (FLAG(g_Flags, GFLAG_APPCLOSE) || FLAG(g_Flags, GFLAG_EXITLOOP))
+        {
             break;
-        if (FLAG(g_Flags, GFLAG_APPCLOSE))
-            break;
-        if (FLAG(g_Flags, GFLAG_EXITLOOP))
-            break;
-        if (FLAG(g_Flags, GFLAG_APPACTIVE)) {
-            union {
-                __int64 ctakt;
-                LARGE_INTEGER ctakt_li;
-            };
-
-            QueryPerformanceCounter(&ctakt_li);
-            if (FLAG(g_Flags, GFLAG_4SPEED))
-            {
-                ctakt *= 4;
-            }
-            ctakt -= zero_offset;
-            float cur_takt = float(double(ctakt - takt) * freq_inv);
-            if (cur_takt <= 0)
-                cur_takt = prev_takt;
-            prev_takt = cur_takt;
-
-            if (g_FormCur) {
-#ifdef _DEBUG
-                SETFLAG(g_Flags, GFLAG_TAKTINPROGRESS);
-
-                // CDText::T("takt", ct-g_TaktTime);
-#endif
-                float tt1 = std::min(100.0f, cur_takt);
-                int tt = Float2Int(tt1);
-
-                smooths -= smooth[smp];
-                smooths += tt;
-                smooth[smp] = tt;
-                smp = (smp + 1) & (SMOOTH_COUNT - 1);
-
-                tt = smooths / SMOOTH_COUNT;
-
-                SRemindCore::Takt(tt);
-                g_FormCur->Takt(tt);
-#ifdef _DEBUG
-
-                // DM(L"takts", CWStr(tt));
-
-                RESETFLAG(g_Flags, GFLAG_TAKTINPROGRESS);
-#endif
-            }
-            takt = ctakt;
-
-            if ((double(ctakt - draw_time_last) * freq_inv) > g_DrawFPSMax_Period) {
-                draw_time_last = ctakt;
-                g_DrawFPSCur++;
-
-                if (g_FormCur) {
-                    g_FormCur->Draw();
-
-#if (defined _DEBUG) && !(defined _RELDEBUG)
-                    CHelper::AfterDraw();
-#endif
-                }
-            }
-            else {
-                ctakt = draw_time_last;
-            }
-
-            int cms = Double2Int(double(ctakt) * freq_inv);
-            if ((cms - g_DrawFPSTime) > 1000) {
-                g_DrawFPSTime = cms;
-                g_DrawFPS = g_DrawFPSCur;
-                g_DrawFPSCur = 0;
-
-                g_AvailableTexMem = g_D3DD->GetAvailableTextureMem() / (1024 * 1024);
-                //				DM(L"MatrixGame.FPS",CWStr(g_DrawFPS).c_str());
-            }
-
-            //			Sleep(10);
         }
-        else
-            Sleep(1);
+
+        if (!FLAG(g_Flags, GFLAG_APPACTIVE) || !g_FormCur)
+        {
+            std::this_thread::yield();
+            continue;
+        }
+
+        auto cur_takt = clock::now();
+
+        auto cur_delta = (cur_takt - last_takt);
+
+        start_tp = clock::now();
+
+        if (FLAG(g_Flags, GFLAG_4SPEED))
+        {
+            cur_delta *= 4;
+        }
+
+        lgr.trace("dif: %f")(cur_delta.count() * freq_inv);
+        int tt = Float2Int(std::min(100.0, cur_delta.count() * freq_inv));
+
+#ifdef _DEBUG
+        SETFLAG(g_Flags, GFLAG_TAKTINPROGRESS);
+#endif
+
+        // smooths -= smooth[smp];
+        // smooths += tt;
+        // smooth[smp] = tt;
+        // smp = (smp + 1) & (SMOOTH_COUNT - 1);
+
+        // tt = smooths / SMOOTH_COUNT;
+
+        SRemindCore::Takt(tt);
+        g_FormCur->Takt(tt);
+#ifdef _DEBUG
+        RESETFLAG(g_Flags, GFLAG_TAKTINPROGRESS);
+#endif
+
+        last_takt = cur_takt;
+
+        logic_tp = clock::now();
+
+        // TODO: maybe add back FPS limit
+        g_FormCur->Draw();
+#if (defined _DEBUG) && !(defined _RELDEBUG)
+        CHelper::AfterDraw();
+#endif
+
+        auto shit_time = std::chrono::duration_cast<std::chrono::microseconds>(start_tp - draw_tp);
+
+        draw_tp = clock::now();
+        fps.add(draw_tp);
+
+        auto logic_time = std::chrono::duration_cast<std::chrono::microseconds>(logic_tp - start_tp);
+        auto draw_time =  std::chrono::duration_cast<std::chrono::microseconds>(draw_tp - logic_tp);
+
+        // lgr.trace("s:%lld|l:%lld|d:%lld")(shit_time.count(), logic_time.count(), draw_time.count());
+        // lgr.trace("FPS: %ld")(fps.count());
+        g_DrawFPS = fps.count();
+
+        g_AvailableTexMem = g_D3DD->GetAvailableTextureMem() / (1024 * 1024);
     }
 
     return 1;
@@ -722,6 +730,7 @@ LRESULT CALLBACK L3G_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
             return true;  // prevent Windows from setting cursor to window class cursor
         case WM_DESTROY:
         case WM_CLOSE:
+        case WM_QUIT:
             SETFLAG(g_Flags, GFLAG_APPCLOSE);
             //			PostQuitMessage(0);
             return 0;
