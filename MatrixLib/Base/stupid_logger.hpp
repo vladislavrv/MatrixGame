@@ -127,12 +127,18 @@ public:
     };
 
     stupid(const std::string& path)
-    : _out{path, std::ios::app}
+    : _out_file{path, std::ios::app}
+    , _out{_out_file}
     {
-        if (!_out.is_open())
+        if (!_out_file.is_open())
         {
             throw std::runtime_error("Failed to open log file: " + path);
         }
+    }
+
+    stupid(std::ostream& out)
+    : _out{out}
+    {
     }
 
     auto fatal(const char* format, std::source_location caller = std::source_location::current())
@@ -179,7 +185,8 @@ private:
         }
     }
 
-    std::ofstream _out;
+    std::ofstream _out_file;
+    std::ostream& _out;
 };
 
 } // namespace logger
