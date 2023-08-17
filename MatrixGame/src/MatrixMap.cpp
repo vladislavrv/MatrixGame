@@ -3,10 +3,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include <new>
-#include <algorithm>
 
-#include <windows.h>
 #include "MatrixMap.hpp"
 #include "MatrixMapStatic.hpp"
 #include "MatrixObject.hpp"
@@ -33,6 +30,14 @@
 #include "Effects/MatrixEffectLandscapeSpot.hpp"
 
 #include "CFile.hpp"
+
+#include <stupid_logger.hpp>
+#include <perf_counter.hpp>
+
+#include <new>
+#include <algorithm>
+
+#include <windows.h>
 
 #define RENDER_PROJ_SHADOWS_IN_STENCIL_PASS
 
@@ -2131,11 +2136,14 @@ void CMatrixMap::DrawSky(void) {
 void CMatrixMap::Draw(void) {
     DTRACE();
 
-    float fBias = -1.0f;
+    static perf_counter perf;
+    perf.reset();
 
     if (FLAG(g_MatrixMap->m_Flags, MMFLAG_SKY_ON)) {
         DrawSky();
     }
+
+    perf.add("1");
 
     ASSERT_DX(g_D3DD->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
     ASSERT_DX(g_D3DD->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
@@ -2164,6 +2172,8 @@ void CMatrixMap::Draw(void) {
     else {
         g_D3DD->SetRenderState(D3DRS_FOGENABLE, FALSE);
     }
+
+    perf.add("2");
 
     // one per frame
     ASSERT_DX(g_D3DD->SetTransform(D3DTS_VIEW, &m_Camera.GetViewMatrix()));
@@ -2197,13 +2207,20 @@ void CMatrixMap::Draw(void) {
             DrawLandscapeSurfaces();
     }
 
+    perf.add("3");
+
+    float fBias = -1.0f;
     for (int i = 0; i < 4; i++) {
         ASSERT_DX(g_D3DD->SetSamplerState(i, D3DSAMP_MIPMAPLODBIAS, *((LPDWORD)(&(fBias)))));
     }
 
     CMatrixEffectLandscapeSpot::DrawAll();  // we should draw landscape spots immediately after draw landscape
 
+    perf.add("4");
+
     DrawWater();
+
+    perf.add("5");
 
     fBias = 0.0f;
     for (int i = 0; i < 4; i++) {
@@ -2218,13 +2235,19 @@ void CMatrixMap::Draw(void) {
         DrawShadows();
     }
 
+    perf.add("6");
+
     DrawEffects();
+
+    perf.add("7");
 
     for (int od = 0; od < m_AD_Obj_cnt; ++od) {
         if (m_AD_Obj[od]->GetObjectType() == OBJECT_TYPE_FLYER) {
             ((CMatrixFlyer *)m_AD_Obj[od])->DrawPropeller();
         }
     }
+
+    perf.add("8");
 
     // CDText::T("COL", (int)GetColor(m_TraceStopPos.x, m_TraceStopPos.y));
 
@@ -2247,6 +2270,10 @@ void CMatrixMap::Draw(void) {
 
     CMatrixProgressBar::DrawAll();
     CMultiSelection::DrawAll();
+
+    perf.add("9");
+
+
 
     //#ifdef _DEBUG
     //
@@ -2377,11 +2404,17 @@ void CMatrixMap::Draw(void) {
         ASSERT_DX(g_D3DD->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE));
     }
 
+    perf.add("10");
+
 #if (defined _DEBUG) && !(defined _RELDEBUG)
     CHelper::DrawAll();
 #endif
 
+    perf.add("11");
+
     m_DI.Draw();  // debug info
+
+    perf.add("12");
 
     if (m_DialogModeName) {
         if (wcscmp(m_DialogModeName, TEMPLATE_DIALOG_MENU) == 0) {
@@ -2389,9 +2422,13 @@ void CMatrixMap::Draw(void) {
         }
     }
 
+    perf.add("13");
+
     g_IFaceList->Render();
     CMatrixProgressBar::DrawAllClones();
     CMatrixHint::DrawAll();
+
+    perf.add("14");
 
     //_________________________________________________________________________________________________
 
@@ -2399,9 +2436,16 @@ void CMatrixMap::Draw(void) {
         m_Transition.Render();
     }
 
+    perf.add("15");
+
     //_________________________________________________________________________________________________
 
     m_Cursor.Draw();
+
+    perf.add("16");
+
+
+    lgr.trace("DRAW: %s")(perf.get_string().c_str());
 }
 
 void CMatrixMap::Takt(int step) {
