@@ -27,6 +27,8 @@
 #include "stdio.h"
 
 #include <utils.hpp>
+#include <perf_counter.hpp>
+#include <stupid_logger.hpp>
 
 #include <string>
 #include <chrono>
@@ -224,12 +226,17 @@ void CFormMatrixGame::Leave(void) {
 void CFormMatrixGame::Draw(void) {
     DTRACE();
 
+    static perf_counter perf;
+    perf.reset();
+
     if (!FLAG(g_MatrixMap->m_Flags, MMFLAG_VIDEO_RESOURCES_READY))
     {
         return;
     }
 
     CInstDraw::DrawFrameBegin();
+
+    perf.add("1");
 
     if (FLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE))
     {
@@ -266,7 +273,11 @@ void CFormMatrixGame::Draw(void) {
             );
     }
 
+    perf.add("2");
+
     g_MatrixMap->BeforeDraw();
+
+    perf.add("3");
 
     if (FLAG(g_Flags, GFLAG_STENCILAVAILABLE))
     {
@@ -289,6 +300,8 @@ void CFormMatrixGame::Draw(void) {
                                     D3DCOLOR_XRGB(255, 0, 255), 0.0f, 0));
     }
 
+    perf.add("4");
+
     ASSERT_DX(g_D3DD->BeginScene());
 #ifdef _DEBUG
     if (!FLAG(g_Flags, GFLAG_EXTRAFREERES)) {
@@ -296,10 +309,16 @@ void CFormMatrixGame::Draw(void) {
     }
 #endif
 
+    perf.add("5");
+
     g_MatrixMap->Draw();
+
+    perf.add("6");
 
     ASSERT_DX(g_D3DD->EndScene());
     ASSERT_DX(g_D3DD->Present(NULL, NULL, NULL, NULL));
+
+    perf.add("7");
 
 #ifdef _DEBUG
     RESETFLAG(g_Flags, GFLAG_RENDERINPROGRESS);
@@ -314,6 +333,11 @@ void CFormMatrixGame::Draw(void) {
 
     SetWindowTextA(g_Wnd, buff.c_str());
 #endif
+
+    perf.add("8");
+
+
+    lgr.trace("FORM: %s")(perf.get_string().c_str());
 }
 
 void CFormMatrixGame::Takt(int step) {
