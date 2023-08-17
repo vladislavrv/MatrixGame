@@ -16,6 +16,8 @@
 
 #include <utils.hpp>
 #include <stupid_logger.hpp>
+#include <perf_counter.hpp>
+#include <fps_counter.hpp>
 
 #include <fstream>
 #include <chrono>
@@ -39,7 +41,7 @@ ATOM g_WndA = 0;
 HWND g_Wnd = 0;
 bool g_WndExtern = false;
 DWORD g_WndOldProg = 0;
-std::wstring *g_WndClassName;
+std::wstring g_WndClassName;
 int g_ScreenX = 0, g_ScreenY = 0;
 D3DPRESENT_PARAMETERS g_D3Dpp;
 // CReminder *g_Reminder;
@@ -163,9 +165,9 @@ void L3GInitAsEXE(HINSTANCE hinst, CBlockPar& bpcfg, const wchar* sysname, const
     else
         refresh = bpcfg.ParGet(L"FullScreen").GetStrPar(2, L",").GetInt();
 
-    g_WndClassName = HNew(g_CacheHeap) std::wstring(sysname);
-    *g_WndClassName += L"_wc";
-    std::string classname{utils::from_wstring(g_WndClassName->c_str())};
+    g_WndClassName = sysname;
+    g_WndClassName += L"_wc";
+    std::string classname{utils::from_wstring(g_WndClassName)};
 
     WNDCLASSEX wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -411,16 +413,15 @@ void L3GDeinit() {
         }*/
     ZeroMemory(&g_D3DDCaps, sizeof(D3DCAPS9));
 
-    if (g_WndA) {
-        if (g_Wnd) {
+    if (g_WndA)
+    {
+        if (g_Wnd)
+        {
             DestroyWindow(g_Wnd);
             g_Wnd = 0;
         }
-        UnregisterClass(utils::from_wstring(g_WndClassName->c_str()).c_str(), g_HInst);
+        UnregisterClass(utils::from_wstring(g_WndClassName).c_str(), g_HInst);
         g_WndA = 0;
-
-        using std::wstring;
-        HDelete(wstring, g_WndClassName, g_CacheHeap);
     }
     if (g_WndExtern) {
         SetWindowLong(g_Wnd, GWL_WNDPROC, g_WndOldProg);
@@ -428,61 +429,11 @@ void L3GDeinit() {
     g_WndExtern = false;
 }
 
-template<size_t _size>
-class fps_counter
-{
-public:
-    using clock = std::chrono::high_resolution_clock;
-
-    void add(clock::time_point tp)
-    {
-        if (_full)
-        {
-            ++_left %= _size;
-        }
-
-        while (_left != _right && _values[_left] < tp - period)
-        {
-            ++_left %= _size;
-            _full = false;
-        }
-
-        _values[_right] = tp;
-
-        ++_right %= _size;
-
-        _full = _right == _left;
-    }
-
-    size_t count()
-    {
-        ssize_t fps = _right - _left + _full * _size;
-        return (fps >= 0) ? fps : _size + fps;
-    }
-
-    void clear()
-    {
-        _left = _right = 0;
-    }
-
-private:
-    static constexpr clock::duration period = std::chrono::seconds(1);
-
-    std::array<clock::time_point, _size> _values;
-    size_t _left{0};
-    size_t _right{0};
-    bool _full{false};
-};
-
-
-
 int L3GRun()
 {
     using clock = std::chrono::high_resolution_clock;
-    constexpr auto freq = clock::period::den;
 
-    double freq_inv = 1000.0 / double(freq);
-
+    constexpr auto to_milliseconds = [](auto dur) { return std::chrono::duration_cast<std::chrono::milliseconds>(dur); };
 
     int smooth[SMOOTH_COUNT];
     int smooths = SMOOTH_COUNT * 10;
@@ -490,13 +441,12 @@ int L3GRun()
     for (int i = 0; i < SMOOTH_COUNT; ++i)
         smooth[i] = 10;
 
-    clock::time_point start_tp, logic_tp, draw_tp;
-
     fps_counter<100> fps;
+    perf_counter perf;
     MSG msg;
 
-    auto zero_offset = clock::now();
-    auto last_takt = zero_offset;
+    auto prev_takt = clock::now();
+    perf.reset();
 
     while (true)
     {
@@ -516,56 +466,50 @@ int L3GRun()
         }
 
         auto cur_takt = clock::now();
+        auto delta_time = (cur_takt - prev_takt);
+        prev_takt = cur_takt;
 
-        auto cur_delta = (cur_takt - last_takt);
-
-        start_tp = clock::now();
+        perf.add("S");
 
         if (FLAG(g_Flags, GFLAG_4SPEED))
         {
-            cur_delta *= 4;
+            delta_time *= 4;
         }
 
-        lgr.trace("dif: %f")(cur_delta.count() * freq_inv);
-        int tt = Float2Int(std::min(100.0, cur_delta.count() * freq_inv));
+        int delta = std::min(100LL, to_milliseconds(delta_time).count());
+
+        // TODO: bring smoothness back?
+        // smooths -= smooth[smp];
+        // smooths += delta;
+        // smooth[smp] = delta;
+        // smp = (smp + 1) & (SMOOTH_COUNT - 1);
+
+        // delta = smooths / SMOOTH_COUNT;
 
 #ifdef _DEBUG
         SETFLAG(g_Flags, GFLAG_TAKTINPROGRESS);
 #endif
-
-        // smooths -= smooth[smp];
-        // smooths += tt;
-        // smooth[smp] = tt;
-        // smp = (smp + 1) & (SMOOTH_COUNT - 1);
-
-        // tt = smooths / SMOOTH_COUNT;
-
-        SRemindCore::Takt(tt);
-        g_FormCur->Takt(tt);
+        SRemindCore::Takt(delta);
+        g_FormCur->Takt(delta);
 #ifdef _DEBUG
         RESETFLAG(g_Flags, GFLAG_TAKTINPROGRESS);
 #endif
 
-        last_takt = cur_takt;
+        perf.add("L");
 
-        logic_tp = clock::now();
-
-        // TODO: maybe add back FPS limit
+        // TODO: maybe add back FPS limit?
         g_FormCur->Draw();
 #if (defined _DEBUG) && !(defined _RELDEBUG)
         CHelper::AfterDraw();
 #endif
 
-        auto shit_time = std::chrono::duration_cast<std::chrono::microseconds>(start_tp - draw_tp);
+        perf.add("D");
+        fps++;
+        auto perf_stat = perf.get_string();
+        perf.reset();
 
-        draw_tp = clock::now();
-        fps.add(draw_tp);
+        lgr.trace("Delta: %3d | Times: %s | FPS: %ld")(delta, perf_stat.c_str(), fps.count());
 
-        auto logic_time = std::chrono::duration_cast<std::chrono::microseconds>(logic_tp - start_tp);
-        auto draw_time =  std::chrono::duration_cast<std::chrono::microseconds>(draw_tp - logic_tp);
-
-        // lgr.trace("s:%lld|l:%lld|d:%lld")(shit_time.count(), logic_time.count(), draw_time.count());
-        // lgr.trace("FPS: %ld")(fps.count());
         g_DrawFPS = fps.count();
 
         g_AvailableTexMem = g_D3DD->GetAvailableTextureMem() / (1024 * 1024);
@@ -574,45 +518,13 @@ int L3GRun()
     return 1;
 }
 
-LRESULT CALLBACK L3G_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    switch (message) {
+LRESULT CALLBACK L3G_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
         case WM_PAINT:
-            // if(FLAG(g_Flags, GFLAG_APPACTIVE) && g_FormCur) g_FormCur->Draw();
-            // do not draw by paint message
             break;
-            /*case WM_ACTIVATE:
-                if((LOWORD(wParam)==WA_ACTIVE) || (LOWORD(wParam)==WA_CLICKACTIVE)) {
-                    if(HIWORD(wParam)==0) {
-                        SETFLAG(g_Flags, GFLAG_APPACTIVE);
-                        if (FLAG(g_Flags, GFLAG_FULLSCREEN))
-                        {
-                            ShowWindow(g_Wnd, SW_MAXIMIZE);
-                        } else
-                        {
-                            ShowWindow(g_Wnd, SW_RESTORE);
-                        }
-                        if (g_FormCur) g_FormCur->SystemEvent(SYSEV_ACTIVATED);
-                        //g_D3DD->TestCooperativeLevel();
-                  //  	CRect rc;
-                  //      GetClientRect(hWnd,&rc);
-                  //      ClientToScreen(hWnd,(CPoint *)&rc.left);
-                     // reen(hWnd,(CPoint *)&rc.right);
-                        //ClipCursor(&rc);
-
-                        }
-                } else {
-                    //ClipCursor(NULL);
-                    if (g_FormCur) g_FormCur->SystemEvent(SYSEV_DEACTIVATING);
-                    RESETFLAG(g_Flags, GFLAG_APPACTIVE);
-
-                    //SetWindowTextA(g_Wnd, "Click me");
-                    ShowWindow(g_Wnd, SW_MINIMIZE);
-                    ClipCursor(NULL);
-                    g_D3DD->TestCooperativeLevel();
-                }
-                break;*/
-
-            // case WM_ACTIVATE:
+        // case WM_ACTIVATE:
         case WM_ACTIVATEAPP:
         {
             if (FLAG(g_Flags, GFLAG_KEEPALIVE))
@@ -620,39 +532,55 @@ LRESULT CALLBACK L3G_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
                 // don't minimize or pause the game when keepalive flag is set
                 break;
             }
-            // g_D3DD->TestCooperativeLevel();
-            if (wParam != 0) {
+            if (wParam != 0)
+            {
                 SETFLAG(g_Flags, GFLAG_APPACTIVE);
-                if (FLAG(g_Flags, GFLAG_FULLSCREEN)) {
+                if (FLAG(g_Flags, GFLAG_FULLSCREEN))
+                {
                     g_D3Dpp.Windowed = FALSE;
                     g_D3DD->Reset(&g_D3Dpp);
                     ShowWindow(g_Wnd, SW_MAXIMIZE);
                 }
-                else {
+                else
+                {
                     ShowWindow(g_Wnd, SW_RESTORE);
                 }
-                // g_D3DD->TestCooperativeLevel();
                 // if (g_D3DD->TestCooperativeLevel() == D3DERR_DEVICENOTRESET) {g_D3DD->Reset(&g_D3Dpp);}
                 if (g_FormCur)
+                {
                     g_FormCur->SystemEvent(SYSEV_ACTIVATED);
+                }
             }
-            else {
+            else
+            {
                 RESETFLAG(g_Flags, GFLAG_APPACTIVE);
                 if (g_FormCur)
+                {
                     g_FormCur->SystemEvent(SYSEV_DEACTIVATING);
+                }
 
-                if (FLAG(g_Flags, GFLAG_FULLSCREEN)) {
+                if (FLAG(g_Flags, GFLAG_FULLSCREEN))
+                {
                     g_D3Dpp.Windowed = TRUE;
                     g_D3DD->Reset(&g_D3Dpp);
                 }
                 ShowWindow(g_Wnd, SW_MINIMIZE);
                 ClipCursor(NULL);
-                // g_D3DD->TestCooperativeLevel();
             }
             break;
         }
+        case WM_SETCURSOR:
+            return true;  // prevent Windows from setting cursor to window class cursor
+        case WM_DESTROY:
+        case WM_CLOSE:
+        case WM_QUIT:
+            SETFLAG(g_Flags, GFLAG_APPCLOSE);
+            //          PostQuitMessage(0);
+            return 0;
 
-        case 0x020A:  // WM_MOUSEWHEEL: // */) {(msg==0x020A/*
+
+
+        case WM_MOUSEWHEEL:
         {
 //#define GET_KEYSTATE_WPARAM(wParam)     (LOWORD(wParam))
 #define GET_WHEEL_DELTA_WPARAM(wParam) ((short)HIWORD(wParam))
@@ -725,15 +653,6 @@ LRESULT CALLBACK L3G_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
             if (FLAG(g_Flags, GFLAG_APPACTIVE) && g_FormCur)
                 g_FormCur->Keyboard(false, lp2key(lParam));
             break;
-        case WM_SETCURSOR:
-            // g_D3DD->ShowCursor(true);
-            return true;  // prevent Windows from setting cursor to window class cursor
-        case WM_DESTROY:
-        case WM_CLOSE:
-        case WM_QUIT:
-            SETFLAG(g_Flags, GFLAG_APPCLOSE);
-            //			PostQuitMessage(0);
-            return 0;
     }
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
