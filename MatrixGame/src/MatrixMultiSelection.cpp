@@ -253,7 +253,7 @@ void CMultiSelection::Update(
                 SETFLAG(m_Flags, MS_FLAG_BUILDINGS);
             }
 
-            if (m_SelItems.size() < 9) {
+            if (m_SelItems.size() < 30) {
                 m_SelItems.push_back(o);
                 if (o->IsRobot()) {
                     if (!o->AsRobot()->IsSelected()) {
