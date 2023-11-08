@@ -9,9 +9,9 @@
 
 #define DI_KEY_X 10
 #define DI_KEY_Y 10
-#define DI_KEY_W 140
-#define DI_KEY_H 14
-#define DI_VAL_W 200
+#define DI_KEY_W 220
+#define DI_KEY_H 23
+#define DI_VAL_W 300
 
 #define MAX_DEBUG_INFO_ITEMS 128
 
@@ -21,8 +21,8 @@ CMatrixDebugInfo::CMatrixDebugInfo()
 : m_Font{nullptr}
 , m_Pos{DI_KEY_X, DI_KEY_Y}
 {
-    if (D3D_OK != D3DXCreateFontW(g_D3DD, 10, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-                                  DEFAULT_QUALITY, DEFAULT_PITCH, L"MS Sans Serif", &m_Font))
+    if (D3D_OK != D3DXCreateFontW(g_D3DD, 30, 0, FW_NORMAL, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+                                  PROOF_QUALITY, DEFAULT_PITCH, L"MS Sans Serif", &m_Font))
     {
         throw std::runtime_error("Failed to create font with D3DXCreateFontW()");
     }
