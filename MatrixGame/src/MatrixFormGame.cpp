@@ -844,11 +844,13 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             SSpecialBot bot{};
 
             bot.m_Chassis.m_nKind = RUK_CHASSIS_ANTIGRAVITY;
-            bot.m_Armor.m_Unit.m_nKind = RUK_ARMOR_FIREPROOF;
+            bot.m_Armor.m_Unit.m_nKind = RUK_ARMOR_FULLSTACK;
             bot.m_Head.m_nKind = RUK_HEAD_DYNAMO;
 
-            bot.m_Weapon[0].m_Unit.m_nKind = RUK_WEAPON_CANNON;
-            bot.m_Weapon[1].m_Unit.m_nKind = RUK_WEAPON_CANNON;
+            bot.m_Weapon[0].m_Unit.m_nKind = RUK_WEAPON_LASER;
+            bot.m_Weapon[1].m_Unit.m_nKind = RUK_WEAPON_LASER;
+            bot.m_Weapon[2].m_Unit.m_nKind = RUK_WEAPON_LASER;
+            bot.m_Weapon[3].m_Unit.m_nKind = RUK_WEAPON_LASER;
 
             CMatrixRobotAI *r = bot.GetRobot(pos, PLAYER_SIDE);
 
@@ -1625,7 +1627,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             SSpecialBot sb;
             ZeroMemory(&sb, sizeof(SSpecialBot));
 
-            sb.m_Armor.m_Unit.m_nKind = RUK_ARMOR_NUCLEAR;
+            sb.m_Armor.m_Unit.m_nKind = RUK_ARMOR_FULLSTACK;
             sb.m_Chassis.m_nKind = RUK_CHASSIS_HOVERCRAFT;
             sb.m_Weapon[0].m_Unit.m_nKind = RUK_WEAPON_MISSILE;
             sb.m_Weapon[1].m_Unit.m_nKind = RUK_WEAPON_MISSILE;
@@ -1680,7 +1682,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             SSpecialBot sb;
             ZeroMemory(&sb, sizeof(SSpecialBot));
 
-            sb.m_Armor.m_Unit.m_nKind = RUK_ARMOR_NUCLEAR;
+            sb.m_Armor.m_Unit.m_nKind = RUK_ARMOR_FULLSTACK;
             sb.m_Chassis.m_nKind = RUK_CHASSIS_HOVERCRAFT;
             sb.m_Weapon[0].m_Unit.m_nKind = RUK_WEAPON_MISSILE;
             sb.m_Weapon[1].m_Unit.m_nKind = RUK_WEAPON_MISSILE;
