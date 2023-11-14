@@ -59,17 +59,6 @@ CMatrixMapStatic *CMatrixMapStatic::m_LastLogicTemp;
 SObjectCore *CMatrixMapStatic::GetCore(const SDebugCallInfo &dci) {
     m_Core->m_dci = dci;
 
-    //#ifdef _DEBUG
-    //
-    //        FILE *f = fopen("Errors\\"+CStr(int(m_Core))+".log","a");
-    //        CStr    s("get ");
-    //        s = s + dci._file + " " + dci._line + "\n";
-    //        fwrite(s.Get(), s.Len(), 1, f);
-    //
-    //        fclose(f);
-    //
-    //#endif
-
     m_Core->RefInc();
     return m_Core;
 }
@@ -616,6 +605,69 @@ end:;
     g_D3DD->SetRenderState(D3DRS_NORMALIZENORMALS, FALSE);
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_LIGHTING, FALSE));
     return ok;
+}
+
+// Get Object's rotation around local X-axis(a.k.a. pitch) in radians. Output is normalized to [0, 2pi]
+float CMatrixMapStatic::GetRotationX(void) {
+    float pitch = atan2(this->m_Core->m_Matrix._23, this->m_Core->m_Matrix._33);
+
+    if (pitch < 0.0f) {
+        pitch += 2.0f * D3DX_PI;
+    }
+    return pitch;
+}
+
+// Get Object's rotation around local Y-axis(a.k.a. yaw) in radians. Output is normalized to [0, 2pi]
+float CMatrixMapStatic::GetRotationY(void) {
+    float yaw = atan2(this->m_Core->m_Matrix._31, this->m_Core->m_Matrix._33);
+
+    if (yaw < 0.0f) {
+        yaw += 2.0f * D3DX_PI;
+    }
+    return yaw;
+}
+
+// Get Object's rotation around local Z-axis(points up and a.k.a. roll) in radians. Output is normalized to [0, 2pi]
+float CMatrixMapStatic::GetRotationZ(void) {
+    float pitch = atan2(this->m_Core->m_Matrix._12, this->m_Core->m_Matrix._11);
+
+    if (pitch < 0.0f) {
+        pitch += 2.0f * D3DX_PI;
+    }
+    return pitch;
+}
+
+// Set Object's rotation around local X-axis(a.k.a. pitch) to some value in radians.
+void CMatrixMapStatic::SetRotationX(float pitch_angle) {
+    float sin_pitch = sinf(pitch_angle);
+    float cos_pitch = cosf(pitch_angle);
+
+    this->m_Core->m_Matrix._22 = cos_pitch;
+    this->m_Core->m_Matrix._23 = -sin_pitch;
+    this->m_Core->m_Matrix._32 = sin_pitch;
+    this->m_Core->m_Matrix._33 = cos_pitch;
+}
+
+// Set Object's rotation around local Y-axis(a.k.a. yaw) to some value in radians.
+void CMatrixMapStatic::SetRotationY(float yaw_angle) {
+    float sin_yaw = sinf(yaw_angle);
+    float cos_yaw = cosf(yaw_angle);
+
+    this->m_Core->m_Matrix._11 = cos_yaw;
+    this->m_Core->m_Matrix._13 = sin_yaw;
+    this->m_Core->m_Matrix._31 = -sin_yaw;
+    this->m_Core->m_Matrix._33 = cos_yaw;
+}
+
+// Set Object's rotation around local Z-axis(points up and a.k.a. roll) to some value in radians.
+void CMatrixMapStatic::SetRotationZ(float roll_angle) {
+    float sin_roll = sinf(roll_angle);
+    float cos_roll = cosf(roll_angle);
+
+    this->m_Core->m_Matrix._11 = cos_roll;
+    this->m_Core->m_Matrix._12 = -sin_roll;
+    this->m_Core->m_Matrix._21 = sin_roll;
+    this->m_Core->m_Matrix._22 = cos_roll;
 }
 
 #ifdef SHOW_ASSIGNED_GROUPS
