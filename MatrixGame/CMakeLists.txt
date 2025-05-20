@@ -55,10 +55,11 @@ target_link_libraries(
 )
 
 if(MATRIXGAME_CHEATS)
-    set_source_files_properties(
-        src/MatrixFormGame.cpp
-        PROPERTIES
-            COMPILE_DEFINITIONS CHEATS_ON)
+    set_property(
+            SOURCE src/MatrixFormGame.cpp
+            APPEND
+            PROPERTY COMPILE_DEFINITIONS CHEATS_ON
+    )
 endif()
 
 add_matrix_directory(src/Effects)
@@ -71,11 +72,12 @@ if(MATRIXGAME_BUILD_DLL)
     # remove lib prefix from the DLL name (for GCC build)
     set_target_properties(MatrixGame PROPERTIES PREFIX "")
 else()
-    set_source_files_properties(
+    set_property(
+            SOURCE
             src/MatrixFormGame.cpp
             src/MatrixGame.cpp
-            PROPERTIES
-            COMPILE_DEFINITIONS BUILD_EXE
+            APPEND
+            PROPERTY COMPILE_DEFINITIONS BUILD_EXE
     )
     add_executable(MatrixGame)
 endif()
